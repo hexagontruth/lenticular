@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="build/style.css"/>
+  <title>Lenticular</title>
+<body>
+<nav class="toolbar toolbar-main">
+<button class="icon-record"></button>
+<button class="icon-stop"></button>
+<input id="framez" type="text"/>
+<select id="tab-selector">
+    <option value="0" selected default>Render</option>
+    <option value="1">Draw1</option>
+    <option value="2">Draw2</option>
+    <option value="3">Draw3</option>
+    <option value="4">Draw4</option>
+  </select>
+</nav>
+<main class="main">
+  <section class="tabs">
+    <div class="tab-pane active">
+      <canvas id="thecanvas"></canvas>
+    </div>
+    <div class="tab-pane">
+      <canvas class='canvas-frame' id="draw1"></canvas>
+    </div>
+    <div class="tab-pane">
+      <canvas class='canvas-frame' id="draw2"></canvas>
+    </div>
+    <div class="tab-pane">
+      <canvas class='canvas-frame' id="draw3"></canvas>
+    </div>
+    <div class="tab-pane">
+      <canvas class='canvas-frame' id="draw4"></canvas>
+    </div>
+  </section>
+</main>
+
+</canvas>
+<script src="build/client.js"></script>
+</body>

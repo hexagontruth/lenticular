@@ -1,0 +1,14 @@
+/frames
+/node_modules
+/user
+/output
+/public/build
+/test
+/tmp
+*.log
+*.png
+*.gif
+*.jpeg
+*.jpg
+*.mp4
+*.webm
