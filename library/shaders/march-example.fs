@@ -48,19 +48,6 @@ float march(vec4 r, vec4 d, float s) {
   return m;
 }
 
-vec4 disp(vec4 p, vec4 n, vec4 d) {
-  vec4 r;
-  r.x = refract(p, n, d.x).x;
-  r.y = refract(p, n, d.y).y;
-  r.z = refract(p, n, d.z).z;
-  r.w = refract(p, n, d.w).w;
-  return r;
-}
-
-vec4 disp(vec4 p, vec4 n, vec3 d) {
-  return disp(p, n, vec4(d, 0));
-}
-
 vec4 camera(vec3 hex) {
   vec4 hex4 = vec4(hex, 0);
   vec4 c = unit.xxxx;

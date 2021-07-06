@@ -1,12 +1,13 @@
 const PROGRAM_DEFAULTS = {
   dim: 2 ** 12,
   interval: 25,
-  duration: 2 ** 40,
   epochs: 6,
   start: 0,
   skip: 1,
   params: {
+    duration: 2 ** 40,
     gridSize: 360,
+    epochs: 6,
   },
   play: true,
 };
@@ -20,7 +21,7 @@ class Program {
     this.loadedFiles = {};
     for (let arg of args) {
       if (typeof arg == 'string') {
-        this.load(arg);
+        this.runTask(() => this.load(arg));
       }
       else if (typeof arg == 'object') {
         this.merge(arg);
@@ -30,13 +31,27 @@ class Program {
     this.checkReady();
   }
 
+  runTask(fn, ...args) {
+    let t = this.openTask();
+    let promise = new Promise((resolve, reject) => {
+      fn(...args).then((result) => {
+        resolve(result);
+        this.closeTask(t);
+      }).catch((err) => {
+        reject(err);
+        this.closeTask(t);
+      });
+    });
+    return promise;
+  }
+
   merge(obj) {
     this.settings = Util.merge(this.settings || {}, obj);
   }
 
   updateSettings() {
     if (this.settings?.shaders?.length) {
-      this.loadShaders();
+      this.runTask(() => this.loadShaders());
     }
   }
 
@@ -73,7 +88,6 @@ class Program {
     else
       throw new LenticularError(`Invalid program name: ${path}. Too bad.`)
     path = 'data/programs/' + path;
-    let t = this.openTask();
     this._ready = false;
     let response = await fetch(path);
     if (response.status != 200)
@@ -81,19 +95,14 @@ class Program {
     let json = await response.json();
     this.merge(json);
     this.updateSettings();
-    this.closeTask(t);
   }
 
   async loadShaders() {
-    let t= this.openTask();
-
     let paths = this.settings?.shaders || [];
     this.shaderText = Array(paths.lengths);
     await Promise.all(paths.map(async (path, idx) => {
       this.shaderText[idx] = await this.loadShader(path);
     }));
-
-    this.closeTask(t);
   }
 
   async loadShader(path) {

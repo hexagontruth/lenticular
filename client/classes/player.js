@@ -9,8 +9,9 @@ const PLAYER_DEFAULT_UNIFORMS = {
   nbStates: 7,
   threshold: 2,
   counter: 0,
-  duration: 120,
+  duration: 600,
   time: 0,
+  epochs: 6,
   fTime: 0,
   fEpoch: 0,
   fEpochFills: Array(6).fill(0),
@@ -39,7 +40,7 @@ class Player {
     this.gl = this.canvas.getContext('webgl2');
 
     this.frames = frames;
-    this.uniforms = Util.merge({}, PLAYER_DEFAULT_UNIFORMS);
+    this.uniforms = Util.merge({}, PLAYER_DEFAULT_UNIFORMS, this.settings.uniforms);
     this.frameCond = (n) => n.counter % this.settings.skip == 0 && n.counter > this.settings.start;
 
     this.status = status;

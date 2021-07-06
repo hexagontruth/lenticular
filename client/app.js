@@ -30,7 +30,7 @@ function parseArgs(str) {
 }
 let args = parseArgs(location.href);
 let play = args.test == undefined;
-CONF_PATH = args.program || CONF_PATH;
+CONF_PATH = args.program || args.p || CONF_PATH;
 
 window.addEventListener('DOMContentLoaded', () => {
   console.log('wedge');
@@ -135,6 +135,8 @@ window.addEventListener('DOMContentLoaded', () => {
   canvas.addEventListener('pointermove', handlePointer);
 
   function handlePointer(ev) {
+    if (!player?.uniforms)
+      return;
     player.uniforms.cursorLast = player.uniforms.cursorPos;
     player.uniforms.cursorPos = [
       ev.offsetX / styleDim * 2 - 1,
@@ -155,5 +157,8 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 let program = new Program(CONF_PATH);
-let player = new Player(program, canvas, frames, status);
-program.onready = () => player.init();
+let player;
+program.onready = () => {
+  player = new Player(program, canvas, frames, status);
+  player.init();
+};

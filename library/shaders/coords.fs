@@ -1,5 +1,5 @@
-vec4 hexbin(vec2 cv) {
-  float res = 1. / 3.;
+vec4 hexbin(vec2 cv, float s) {
+  float res = s / 3.;
   vec2 base, dv;
   base = cv;
   cv *= res;
