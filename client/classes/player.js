@@ -31,17 +31,26 @@ class Player {
   constructor(program, canvas, frames, status) {
     this.program = program;
     this.settings = this.program.settings;
+
+    this.settings.transferDim = this.settings.transferDim || this.settings.dim;
+
     this.canvas = canvas;
     canvas.width = canvas.height = this.settings.dim;
 
     this.transferCanvas = document.createElement('canvas');
-    this.transferCanvas.width = this.transferCanvas.height = this.settings.dim;
+    this.transferCanvas.width = this.transferCanvas.height = this.settings.transferDim;
     this.transferCtx = this.transferCanvas.getContext('2d');
     this.gl = this.canvas.getContext('webgl2');
 
     this.frames = frames;
     this.uniforms = Util.merge({}, PLAYER_DEFAULT_UNIFORMS, this.settings.uniforms);
-    this.frameCond = (n) => n.counter % this.settings.skip == 0 && n.counter > this.settings.start;
+    this.frameCond = (n) => {
+      // Counter is +1 actual step
+      let skipCond = n.counter % this.settings.skip == 0;
+      let startCond = n.counter > this.settings.start;
+      let stopCond = this.settings.stop == null || n.counter <= this.settings.stop;
+      return skipCond && startCond && stopCond;
+    }
 
     this.status = status;
     this.recording = false;
@@ -229,7 +238,7 @@ void main() {
   async endFrame() {
     let cond = this.frameCond(this.uniforms)
     if (this.recording && cond) {
-      this.transferCtx.drawImage(this.canvas, 0, 0, this.settings.dim, this.settings.dim);
+      this.transferCtx.drawImage(this.canvas, 0, 0, this.settings.transferDim, this.settings.transferDim);
       let dataUrl = await this.transferCanvas.toDataURL('image/png', 1);
       this.postFrame(dataUrl);
     }
