@@ -267,6 +267,12 @@ float tatan(vec2 v) {
   return a;
 }
 
+vec2 pt2cart(float m, float p) {
+  p = fract(p + 0.25);
+  float angle = p * tau - pi;
+  return vec2(cos(angle), sin(angle)) * m;
+}
+
 float tsin(float n) {
   return sin(n * tau);
 }
@@ -324,6 +330,10 @@ vec4 vpow(vec4 p, float n) {
 }
 
 float xsum(float s, float q) {
+  return s + q - 2. * s * q;
+}
+
+vec2 xsum(vec2 s, vec2 q) {
   return s + q - 2. * s * q;
 }
 
