@@ -45,10 +45,9 @@ class Player {
     this.frames = frames;
     this.uniforms = Util.merge({}, PLAYER_DEFAULT_UNIFORMS, this.settings.uniforms);
     this.frameCond = (n) => {
-      // Counter is +1 actual step
       let skipCond = n.counter % this.settings.skip == 0;
-      let startCond = n.counter > this.settings.start;
-      let stopCond = this.settings.stop == null || n.counter <= this.settings.stop;
+      let startCond = n.counter >= this.settings.start;
+      let stopCond = this.settings.stop == null || n.counter < this.settings.stop;
       return skipCond && startCond && stopCond;
     }
 

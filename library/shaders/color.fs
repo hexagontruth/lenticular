@@ -29,3 +29,17 @@ vec3 beigify(vec3 c) {
   c = col_b + (col_w - col_b) * c;
   return c;
 }
+
+vec3 hsvShift(vec3 c, vec3 shift) {
+  c = rgb2hsv(c);
+  c += shift;
+  c = hsv2rgb(c);
+  return c;
+}
+
+vec4 hsvShift(vec4 c, vec3 shift) {
+  c = rgb2hsv(c);
+  c.rgb += shift;
+  c = hsv2rgb(c);
+  return c;
+}
