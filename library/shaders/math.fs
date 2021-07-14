@@ -246,16 +246,21 @@ float prod(vec4 p) {
 }
 
 vec2 project(vec2 a, vec2 b) {
-  return dot(a, b) / length  (b) * normalize(b);
+  return dot(a, b) / dot(b, b) * b;
 }
 
 
 vec3 project(vec3 a, vec3 b) {
-  return dot(a, b) / length  (b) * normalize(b);
+  return dot(a, b) / dot(b, b) * b;
 }
 
 vec4 project(vec4 a, vec4 b) {
-  return dot(a, b) / length  (b) * normalize(b);
+  return dot(a, b) / dot(b, b) * b;
+}
+
+vec3 hexProject(vec3 p) {
+  vec3 n = project(p, unit.xxx);
+  return p - n;
 }
 
 float tatan(vec2 v) {
@@ -344,4 +349,18 @@ vec3 xsum(vec3 s, vec3 q) {
 
 vec4 xsum(vec4 s, vec4 q) {
   return s + q - 2. * s * q;
+}
+
+int maxdim(vec3 p) {
+  int idx;
+  idx = p.x > p.y ? 0 : 1;
+  idx = p[idx] > p.z ? idx : 2;
+  return idx;
+}
+
+int mindim(vec3 p) {
+  int idx;
+  idx = p.x < p.y ? 0 : 1;
+  idx = p[idx] < p.z ? idx : 2;
+  return idx;
 }
