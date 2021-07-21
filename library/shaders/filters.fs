@@ -2,6 +2,10 @@ float gaussian(vec2 v, float sd) {
   return 1./(tau * sd * sd) * exp(-(v.x * v.x + v.y * v.y) / (2. * sd * sd));
 }
 
+float gaussian(vec3 v, float sd) {
+  return 1./(pow(tau, 3./2.) * sd * sd * sd) * exp(-(v.x * v.x + v.y * v.y + v.z * v.z) / (2. * sd * sd));
+}
+
 vec4 gaussianBlur(int range, float sd) {
   vec4 s, n;
   vec2 uv = gl_FragCoord.xy / size;
