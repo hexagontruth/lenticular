@@ -5,6 +5,7 @@ const PLAYER_DEFAULT_UNIFORMS = {
   tBuffer: null,
   dBuffer: null,
   lastFrame: null,
+  lastBuffer: null,
   size: null,
   nbStates: 7,
   threshold: 2,
@@ -41,9 +42,11 @@ class Player {
     this.transferCanvas.width = this.transferCanvas.height = this.settings.transferDim;
     this.transferCtx = this.transferCanvas.getContext('2d');
     this.gl = this.canvas.getContext('webgl2');
+    this.pixFmt = this.gl.RGBA;
 
     this.frames = frames;
     this.uniforms = Util.merge({}, PLAYER_DEFAULT_UNIFORMS, this.settings.uniforms);
+    this.uniformOverrides = Util.merge(Array(4).fill().map(() => []), this.settings.uniformOverrides || []);
     this.frameCond = (n) => {
       let skipCond = n.counter % this.settings.skip == 0;
       let startCond = n.counter >= this.settings.start;
@@ -126,7 +129,7 @@ void main() {
         data: new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1])
       }
     });
-    this.attachments = [{format: gl.RGBA}];
+    this.attachments = [{format: this.pixFmt}];
     this.sBuffer.push(twgl.createFramebufferInfo(gl, this.attachments));
     this.sBuffer.push(twgl.createFramebufferInfo(gl, this.attachments));
     this.tBuffer.push(twgl.createFramebufferInfo(gl, this.attachments));
@@ -149,28 +152,29 @@ void main() {
     let gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, texture);
     const level = 0;
-    const internalFormat = gl.RGBA;
+    const internalFormat = this.pixFmt;
     const width = 1;
     const height = 1;
     const border = 0;
-    const srcFormat = gl.RGBA;
+    const srcFormat = this.pixFmt;
     const srcType = gl.UNSIGNED_BYTE;
     gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, border, srcFormat, srcType, img);
   }
 
 
-  runProgram(program) {
+  runProgram(program, idx=0) {
     let gl = this.gl;
     gl.useProgram(program.program);
     twgl.setBuffersAndAttributes(gl, program, this.quadBuf);
-    twgl.setUniforms(program, this.uniforms);
+    let uniforms = Util.merge({}, this.uniforms, this.uniformOverrides[idx]);
+    twgl.setUniforms(program, uniforms);
     twgl.drawBufferInfo(gl, this.quadBuf, gl.TRIANGLE_STRIP);
   }
 
   setTexture(tex, data) {
     let gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    gl.texImage2D(gl.TEXTURE_2D, 0, this.pixFmt, this.pixFmt, gl.UNSIGNED_BYTE, data);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -197,27 +201,34 @@ void main() {
 
     uniforms.lastFrame = this.tBuffer[curIdx].attachments[0];
 
+    uniforms.sNew = this.sBuffer[nextIdx].attachments[0];
+    uniforms.tNew = this.tBuffer[nextIdx].attachments[0];
+    uniforms.dNew = this.dBuffer[nextIdx].attachments[0];
+
     uniforms.sBuffer = this.sBuffer[curIdx].attachments[0];
     uniforms.tBuffer = this.tBuffer[curIdx].attachments[0];
     uniforms.dBuffer = this.dBuffer[curIdx].attachments[0];
 
     uniforms.bufferImage = this.sBuffer[curIdx].attachments[0];
     uniforms.lastFrame = this.tBuffer[curIdx].attachments[0];
+    uniforms.lastBuffer = this.sBuffer[curIdx].attachments[0];
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.sBuffer[nextIdx].framebuffer);
-    this.runProgram(this.sProgram);
+    this.runProgram(this.sProgram, 0);
 
     uniforms.bufferImage = this.sBuffer[nextIdx].attachments[0];
+    uniforms.lastBuffer = this.tBuffer[curIdx].attachments[0];
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.tBuffer[nextIdx].framebuffer);
-    this.runProgram(this.tProgram);
+    this.runProgram(this.tProgram, 1);
 
     uniforms.bufferImage = this.tBuffer[nextIdx].attachments[0];
     uniforms.lastFrame = this.dBuffer[curIdx].attachments[0];
+    uniforms.lastBuffer = this.dBuffer[curIdx].attachments[0];
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.dBuffer[nextIdx].framebuffer);
-    this.runProgram(this.dProgram);
+    this.runProgram(this.dProgram, 2);
 
     uniforms.bufferImage = this.dBuffer[nextIdx].attachments[0];
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    this.runProgram(this.cProgram);
+    this.runProgram(this.cProgram, 3);
 
     this.status.value = uniforms.counter;
     this.endFrame();
@@ -259,7 +270,7 @@ void main() {
     }
     for (let texture of txs) {
       gl.bindTexture(gl.TEXTURE_2D, texture.attachments[0]);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+      gl.texImage2D(gl.TEXTURE_2D, 0, this.pixFmt, w, h, 0, this.pixFmt, gl.UNSIGNED_BYTE, data);
     }
   }
 

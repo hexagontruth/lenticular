@@ -87,3 +87,21 @@ vec3 hex2hex(vec3 c) {
   );
   return vec3(-v.x - v.y, v.y, v.x);
 }
+
+vec2 unit2(int i) {
+  vec2 n;
+  n[i] = 1.;
+  return n;
+}
+
+vec3 unit3(int i) {
+  vec3 n;
+  n[i] = 1.;
+  return n;
+}
+
+vec4 unit4(int i) {
+  vec4 n;
+  n[i] = 1.;
+  return n;
+}

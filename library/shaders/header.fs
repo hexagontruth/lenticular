@@ -21,9 +21,13 @@ uniform float sr3;
 uniform vec3 unit;
 
 uniform sampler2D bufferImage;
+uniform sampler2D lastBuffer;
 uniform sampler2D sBuffer;
 uniform sampler2D tBuffer;
 uniform sampler2D dBuffer;
+uniform sampler2D sNew;
+uniform sampler2D tNew;
+uniform sampler2D dNew;
 uniform sampler2D[4] images;
 
 out vec4 fragColor;

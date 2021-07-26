@@ -10,6 +10,8 @@ out vec4 fragColor;
 void main()
 {
   vec2 uv = gl_FragCoord.xy / size;
-  fragColor = texture(bufferImage, uv);
+  vec4 t = texture(bufferImage, uv);
+  fragColor = t;
+  fragColor.rgb = t.rga;
   fragColor.a = 1.;
 }
