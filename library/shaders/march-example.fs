@@ -72,7 +72,7 @@ vec4 camera(vec3 hex) {
   c = mix(c, vec4(1.), step(10., m));
 
   // nan debugging
-  if (isnan(sum(c))) return vec4(1, 0, 0, 1);
+  if (isNan(sum(c))) return vec4(1, 0, 0, 1);
 
   return vec4(c.rgb, 1);
 }

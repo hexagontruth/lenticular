@@ -26,6 +26,8 @@ const PLAYER_DEFAULT_UNIFORMS = {
   unit: [1, 0, -1],
   sr2: 2 ** 0.5,
   sr3: 3 ** 0.5,
+  ap: (3 ** 0.5) / 2,
+  inap: 2 / (3 ** 0.5)
 };
 
 class Player {

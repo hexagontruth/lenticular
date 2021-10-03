@@ -18,6 +18,8 @@ uniform float tau;
 uniform float phi;
 uniform float sr2;
 uniform float sr3;
+uniform float ap;
+uniform float inap;
 uniform vec3 unit;
 
 uniform sampler2D bufferImage;

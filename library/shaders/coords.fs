@@ -105,3 +105,10 @@ vec4 unit4(int i) {
   n[i] = 1.;
   return n;
 }
+
+vec2 scaleUv(vec2 uv, float s) {
+  uv = uv * 2. - 1.;
+  uv *= s;
+  uv = uv * 0.5 + 0.5;
+  return uv;
+}

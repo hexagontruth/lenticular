@@ -1,4 +1,4 @@
-bool isnan(float n) {
+bool isNan(float n) {
   return !(n <= 0. || 0. <= n);
 }
 
@@ -212,12 +212,15 @@ float osc(float n) {
 }
 
 vec2 osc(vec2 n) {
+  n -= 0.25;
   return sin(n * tau) * 0.5 + 0.5;
 }
 vec3 osc(vec3 n) {
+  n -= 0.25;
   return sin(n * tau) * 0.5 + 0.5;
 }
 vec4 osc(vec4 n) {
+  n -= 0.25;
   return sin(n * tau) * 0.5 + 0.5;
 }
 
