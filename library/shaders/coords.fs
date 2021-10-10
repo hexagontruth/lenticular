@@ -47,6 +47,18 @@ vec2 rot(vec2 p, float a) {
   ) * p;
 }
 
+vec3 rot(vec3 p, vec3 u, float a) {
+  float cosa = cos(a);
+  float cosa1 = 1. - cosa;
+  float sina = sin(a);
+  mat3 m = mat3(
+    cosa + u.x * u.x * cosa1,         u.x * u.y * cosa1 + u.z * sina,   u.z * u.x * cosa1 - u.y * sina,
+    u.x * u.y * cosa1 - u.z * sina,   cosa + u.y * u.y * cosa1,         u.z * u.y * cosa1 + u.x * sina,
+    u.x * u.z * cosa1 + u.y * sina,   u.y * u.z * cosa1 - u.x * sina,   cosa + u.z * u.z * cosa1
+  );
+  return m * p;
+}
+
 vec3 rotc(vec3 p) {
   p.yz = rot(p.yz, 0.9553166181245093);
   p.xy = rot(p.xy, 0.75 * pi);
