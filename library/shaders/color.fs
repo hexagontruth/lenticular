@@ -43,3 +43,17 @@ vec4 hsvShift(vec4 c, vec3 shift) {
   c = hsv2rgb(c);
   return c;
 }
+
+vec3 hsvScale(vec3 c, vec3 scale) {
+  c = rgb2hsv(c);
+  c *= scale;
+  c = hsv2rgb(c);
+  return c;
+}
+
+vec4 hsvScale(vec4 c, vec3 scale) {
+  c = rgb2hsv(c);
+  c.rgb += scale;
+  c = hsv2rgb(c);
+  return c;
+}

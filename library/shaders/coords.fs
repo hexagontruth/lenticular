@@ -34,6 +34,41 @@ vec3 roundCubic(vec3 p) {
   return r;
 }
 
+vec3 interpolatedCubic(vec3 p, out vec3 v[3]) {
+  vec3 q, d, r, fl, cl, alt;
+  int i0, i1, i2;
+
+  fl = floor(p);
+  cl = ceil(p);
+  r = round(p);
+  d = abs(r - p);
+
+  for (int i = 0; i < 3; i++)
+    alt[i] = r[i] == fl[i] ? cl[i] : fl[i];
+
+  if (d.x > d.y && d.x > d.z)
+    i0 = 0;
+  else if (d.y > d.z)
+    i0 = 1;
+  else
+    i0 = 2;
+  i1 = (i0 + 1) % 3;
+  i2 = (i0 + 2) % 3;
+
+  r[i0] = -r[i1] - r[i2];
+  v[0] = v[1] = v[2] = r;
+  v[1][i1] = alt[i1];
+  v[1][i0] = -v[1][i1] - v[1][i2];
+  v[2][i2] = alt[i2];
+  v[2][i0] = -v[2][i1] - v[2][i2];
+
+  for (int i = 0; i < 3; i++)
+    q[i] = 1. - amax(v[i] - p);
+
+  q = q / sum(q);
+  return q;
+}
+
 vec3 getCubic(vec3 p) {
   return p - roundCubic(p);
 }
@@ -69,6 +104,10 @@ vec3 arotc(vec3 p) {
   p.xy = rot(p.xy, -0.75 * pi);
   p.yz = rot(p.yz, -0.9553166181245093);
   return p;
+}
+
+vec3 rotHex(vec3 p, float a) {
+  return rot(p, normalize(unit.xxx), a);
 }
 
 vec3 cart2hex(vec2 c) {

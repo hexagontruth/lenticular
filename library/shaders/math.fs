@@ -289,12 +289,20 @@ float tcos(float n) {
   return cos(n * tau);
 }
 
+float ttan(float n) {
+  return tan(n * tau);
+}
+
 vec2 tsin(vec2 n) {
   return sin(n * tau);
 }
 
 vec2 tcos(vec2 n) {
   return cos(n * tau);
+}
+
+vec2 ttan(vec2 n) {
+  return tan(n * tau);
 }
 
 vec3 tsin(vec3 n) {
@@ -305,12 +313,37 @@ vec3 tcos(vec3 n) {
   return cos(n * tau);
 }
 
+vec3 ttan(vec3 n) {
+  return tan(n * tau);
+}
+
 vec4 tsin(vec4 n) {
   return sin(n * tau);
 }
 
 vec4 tcos(vec4 n) {
   return cos(n * tau);
+}
+
+vec4 ttan(vec4 n) {
+  return tan(n * tau);
+}
+
+float twav(float n) {
+  n = mod(n, 1.);
+  return n < 0.5 ? 1. - n * 4. : -1. + (n - .5) * 4.;
+}
+
+vec2 twav(vec2 n) {
+  return vec2(twav(n.x), twav(n.y));
+}
+
+vec3 twav(vec3 n) {
+  return vec3(twav(n.x), twav(n.y), twav(n.z));
+}
+
+vec4 twav(vec4 n) {
+  return vec4(twav(n.x), twav(n.y), twav(n.z), twav(n.w));
 }
 
 vec2 vpow(vec2 p, float n) {
