@@ -400,3 +400,10 @@ int mindim(vec3 p) {
   idx = p[idx] < p.z ? idx : 2;
   return idx;
 }
+
+vec3 vsort(vec3 n) {
+  if (n.x > n.y) n = n.yxz;
+  if (n.y > n.z) n = n.xzy;
+  if (n.x > n.y) n = n.yxz;
+  return n;
+}
