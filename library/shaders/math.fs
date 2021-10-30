@@ -407,3 +407,46 @@ vec3 vsort(vec3 n) {
   if (n.x > n.y) n = n.yxz;
   return n;
 }
+
+float quantize(float f, float n, float ep) {
+  return floor(clamp(f * n, 0., n - ep)) / n;
+}
+
+vec2 quantize(vec2 f, float n, float ep) {
+  return floor(clamp(f * n, 0., n - ep)) / n;
+}
+
+vec3 quantize(vec3 f, float n, float ep) {
+  return floor(clamp(f * n, 0., n - ep)) / n;
+}
+
+vec4 quantize(vec4 f, float n, float ep) {
+  return floor(clamp(f * n, 0., n - ep)) / n;
+}
+
+float quantize(float f, float n) {
+  return quantize(f, n, 1./16384.);
+}
+
+vec2 quantize(vec2 f, float n) {
+  return quantize(f, n, 1./16384.);
+}
+
+vec3 quantize(vec3 f, float n) {
+  return quantize(f, n, 1./16384.);
+}
+
+vec4 quantize(vec4 f, float n) {
+  return quantize(f, n, 1./16384.);
+}
+
+
+float getPartial(float t, float n, float cur) {
+  float epoch, part, val;
+  epoch = floor(t * n);
+  part = fract(t * n);
+  val = step(1., epoch - cur);
+  val += step(1., 1. - abs(epoch - cur)) * part;
+  val = clamp(val, 0., 1.);
+  return val;
+}
