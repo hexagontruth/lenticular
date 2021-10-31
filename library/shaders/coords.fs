@@ -94,6 +94,14 @@ vec3 rot(vec3 p, vec3 u, float a) {
   return m * p;
 }
 
+vec2 trot(vec2 p, float a) {
+  return rot(p, a * tau);
+}
+
+vec3 trot(vec3 p, vec3 u, float a) {
+  return rot(p, u, a * tau);
+}
+
 vec3 rotc(vec3 p) {
   p.yz = rot(p.yz, 0.9553166181245093);
   p.xy = rot(p.xy, 0.75 * pi);
