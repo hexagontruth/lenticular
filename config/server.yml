@@ -5,6 +5,7 @@ default:
   fps: 30
   codec: libx264
   crf: 10
+  input: input
   output: output
   saveImages: true
   saveVideo: false

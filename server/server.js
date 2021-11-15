@@ -16,9 +16,24 @@ class Server {
     this.resetIndex();
     this.idxChars = this.config.imageFilename.match(/\#+/)[0].length;
 
+    execSync(`mkdir -p ${this.config.output} ${this.config.input}`);
+
     this.app.use(express.static('./public'));
     this.app.use('/data', express.static('./library'));
     this.app.use('/data', express.static('./user'));
+    this.app.get('/input', async (req, res) => {
+      let inputFiles = await util.readdir(util.join(this.config.input));
+      res.end(JSON.stringify(inputFiles));
+    });
+    this.app.get('/input/:inputFile', async (req, res) => {
+      let file = await util.readFile(util.join(this.config.input, req.params.inputFile));
+      let mime = util.mimeFromBuffer(file);
+      console.log(mime);
+      // ext =
+      //   num == 0x47 ? 'imag/gif' :
+      //   num ==
+      res.end(file);
+    });
     this.app.post('/reset', (req, res) => {
       this.resetIndex();
       res.end('sure lol');
@@ -34,7 +49,6 @@ class Server {
   }
 
   start() {
-    execSync(`mkdir -p ${this.config.output}`);
     this.config.saveVideo && this.startEncoder();
 
     this.app.listen(this.config.port, () => {

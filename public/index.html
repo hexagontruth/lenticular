@@ -5,16 +5,18 @@
   <title>Lenticular</title>
 <body>
 <nav class="toolbar toolbar-main">
-<button class="icon-record"></button>
-<button class="icon-stop"></button>
-<input id="framez" type="text"/>
-<select id="tab-selector">
+  <button class="icon-record" title="Record"></button>
+  <button class="icon-stop" title="Stop"></button>
+  <button class="icon-image" title="Load images from input directory"></button>
+  <input id="framez" type="text"/>
+  <select id="tab-selector">
     <option value="0" selected default>Render</option>
     <option value="1">Draw1</option>
     <option value="2">Draw2</option>
     <option value="3">Draw3</option>
     <option value="4">Draw4</option>
   </select>
+  <div class="message" id="message"></div>
 </nav>
 <main class="main">
   <section class="tabs">

@@ -4,6 +4,7 @@ const PLAYER_DEFAULT_UNIFORMS = {
   sBuffer: null,
   tBuffer: null,
   dBuffer: null,
+  inputImage: null,
   lastFrame: null,
   lastBuffer: null,
   size: null,
@@ -31,7 +32,7 @@ const PLAYER_DEFAULT_UNIFORMS = {
 };
 
 class Player {
-  constructor(program, canvas, frames, status) {
+  constructor(program, canvas, frames, status, message) {
     this.program = program;
     this.settings = this.program.settings;
 
@@ -56,7 +57,9 @@ class Player {
       return skipCond && startCond && stopCond;
     }
 
+    this.inputFrameCount = 0;
     this.status = status;
+    this.message = message;
     this.recording = false;
 
     this.cursorDown = false;
@@ -142,17 +145,22 @@ void main() {
 
     this.uniforms.images = Array(4).fill().map((e, i) => {
       let tex = gl.createTexture();
-      this.resetTexture(tex);
+      this.resetTexture(tex, true);
       return tex;
     });
+
+    this.uniforms.inputImage = gl.createTexture();
+    this.resetTexture(this.uniforms.inputImage, true);
 
     this.resetCounter();
     this.animate();
   }
 
-  resetTexture(texture, img=this.pixel) {
+  resetTexture(texture, flip=false) {
     let gl = this.gl;
+    let img = this.pixel;
     gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
     const level = 0;
     const internalFormat = this.pixFmt;
     const width = 1;
@@ -189,6 +197,7 @@ void main() {
 
     let curIdx = this.tIdx;
     let nextIdx = (curIdx + 1) % 2;
+    let inputIdx = this.inputFrameCount == 0 ? 0 : uniforms.counter % this.inputFrameCount;
     this.tIdx = nextIdx;
 
     uniforms.cursor = this.cursorDown ? uniforms.cursor + 1 : 0;
@@ -199,6 +208,8 @@ void main() {
     this.uniforms.images.forEach((e, i) => {
       this.setTexture(e, this.frames[i].canvas);
     });
+    if (this.inputFrames?.[inputIdx])
+      this.setTexture(this.uniforms.inputImage, this.inputFrames[inputIdx].canvas);
 
 
     uniforms.lastFrame = this.tBuffer[curIdx].attachments[0];
@@ -288,5 +299,42 @@ void main() {
     catch (err) {
       console.error(err);
     }
+  }
+
+  async loadImages() {
+    let imageList = await this.getInputList();
+    let len = imageList.length;
+    let tasks = [];
+
+    // Create and load frames. TODO: Without canvases?
+    this.inputFrames = Array(len).fill().map((e, i) => {
+      let frame = new CanvasFrame('inputFrame' + i, {dim: this.settings.dim});
+      frame.loadSrc('/input/' + imageList[i]);
+      let task = new Promise((resolve, reject) => {
+        frame.onload = () => {
+          resolve();
+        };
+      });
+      tasks.push(task);
+      return frame;
+    });
+
+    await Promise.all(tasks);
+    this.inputFrameCount = len;
+    this.setMessage(`Loaded ${tasks.length} images lol`);
+  }
+
+  async getInputList() {
+    return await fetch('/input')
+      .then((response) => response.json())
+      .catch((err) => console.error(err));
+  }
+
+  setMessage(msg) {
+    this.message.innerHTML = msg;
+    this.message.classList.add('visible');
+    this.messageTimer = setTimeout(() => {
+      this.message.classList.remove('visible');
+    }, 5000);
   }
 }

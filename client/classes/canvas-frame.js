@@ -31,7 +31,7 @@ class CanvasFrame {
     }
   }
 
-  loadImageFromPrompt(ctx) {
+  loadImageFromPrompt() {
     const reader = new FileReader();
     const input = document.createElement('input');
     input.type = 'file';
@@ -51,7 +51,7 @@ class CanvasFrame {
       data = new Uint8Array(data);
       let blob = new Blob([data], {type: fileType});
       let earl = window.URL.createObjectURL(blob);
-      this.img.src = earl;
+      this.loadSrc(earl);
       let obj = {
         name: this.name,
         data: data,
@@ -61,6 +61,10 @@ class CanvasFrame {
     };
 
     input.click();
+  }
+
+  loadSrc(url) {
+    this.img.src = url;
   }
 
   handleOnload() {
@@ -77,6 +81,7 @@ class CanvasFrame {
       w = d*r;
     }
     this.ctx.drawImage(img, -w/2, -h/2, w, h);
+    this.onload && this.onload();
   }
 
   draw() {

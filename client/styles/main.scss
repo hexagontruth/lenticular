@@ -2,11 +2,18 @@
   box-sizing: border-box;
 }
 
+
+
 body, html {
   height: 100%;
   width: 100%;
   padding: 0;
   margin: 0;
+}
+
+html {
+  font-size: $rem;
+  font-family: $mono;
 }
 
 body {
@@ -16,13 +23,7 @@ body {
   align-items: stretch;
   background: #000;
   color: #aaa;
-}
-
-.toolbar-main {
-  position: fixed;
-  left: 5px;
-  top: 5px;
-  z-index: 5;
+  font-size: 0.5rem;
 }
 
 button.active {
@@ -60,5 +61,33 @@ canvas {
       opacity: 1;
       pointer-events: auto;
     }
+  }
+}
+.toolbar-main {
+  position: fixed;
+  left: 0;
+  top: 0;
+  margin: 0.125rem;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  z-index: 5;
+  * {
+    margin: 0.125rem;
+    height: 1rem;
+  }
+  .message {
+    cursor: default;
+    opacity: 0;
+    transition: opacity 500ms;
+    &.visible {
+      opacity: 1
+    }
+    background: #c63;
+    color: #fff;
+    font-weight: bold;
+    line-height: 1rem;
+    padding: 0 0.25rem;
   }
 }

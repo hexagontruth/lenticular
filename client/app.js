@@ -5,7 +5,9 @@ CONF_PATH = 'raymarch-example';
 const canvas = document.querySelector('#thecanvas');
 const recordButton = document.querySelector('button.icon-record');
 const stopButton = document.querySelector('button.icon-stop');
-const status = document.querySelector('#framez');
+const loadImagesButton = document.querySelector('button.icon-image');
+const status = document.querySelector('#framez'); // why tf is this called "status"?
+const message = document.querySelector('#message');
 
 let styleDim;
 
@@ -127,6 +129,14 @@ window.addEventListener('DOMContentLoaded', () => {
     player.togglePlay(false);
   }
 
+  loadImagesButton.onclick = () => {
+    player.loadImages()
+  }
+
+  message.onclick = () => {
+    message.classList.remove('visible');
+  }
+
   canvas.addEventListener('pointerdown', handlePointer);
   canvas.addEventListener('pointerup', handlePointer);
   canvas.addEventListener('pointerout', handlePointer);
@@ -159,6 +169,6 @@ window.addEventListener('DOMContentLoaded', () => {
 let program = new Program(CONF_PATH);
 let player;
 program.onready = () => {
-  player = new Player(program, canvas, frames, status);
+  player = new Player(program, canvas, frames, status, message);
   player.init();
 };
