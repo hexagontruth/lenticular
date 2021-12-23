@@ -49,6 +49,7 @@ class Player {
 
     this.frames = frames;
     this.uniforms = Util.merge({}, PLAYER_DEFAULT_UNIFORMS, this.settings.uniforms);
+
     this.uniformOverrides = Util.merge(Array(4).fill().map(() => []), this.settings.uniformOverrides || []);
     this.frameCond = (n) => {
       let skipCond = n.counter % this.settings.skip == 0;
@@ -89,6 +90,10 @@ void main() {
       else
         this.intervalTimer = setTimeout(() => this.animate(), interval);
     });
+  }
+
+  initializeControls() {
+
   }
 
   togglePlay(v) {
@@ -150,10 +155,32 @@ void main() {
     });
 
     this.uniforms.inputImage = gl.createTexture();
+
+    this.initControls();
+
     this.resetTexture(this.uniforms.inputImage, true);
 
     this.resetCounter();
     this.animate();
+  }
+
+  initControls() {
+    this.controls = [];
+    let updateFn = (control) => {
+      this.uniforms[control.name] = control.value;
+    };
+    for (let [key, value] of Object.entries(this.settings.controls || {})) {
+      let control = new FloatControl(key, ...value);
+      control.onchange = updateFn;
+      updateFn(control);
+      this.controls.push(control);
+
+    }
+    let controlMenu = document.querySelector('.menu-controls');
+    controlMenu.innerHTML = '';
+    for (let control of this.controls) {
+      controlMenu.appendChild(control.el);
+    }
   }
 
   resetTexture(texture, flip=false) {

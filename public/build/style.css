@@ -638,4 +638,29 @@ canvas {
   opacity: 1;
 }
 
+.menu-controls {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: max(min(20vw, 20rem), 10rem);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  list-style: none;
+  z-index: 10;
+}
+.menu-controls .control {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+}
+.menu-controls .control input[type=text] {
+  width: 3em;
+}
+.menu-controls .control input[type=range] {
+  width: 100%;
+}
+
 /*# sourceMappingURL=style.css.map */
