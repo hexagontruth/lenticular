@@ -7,15 +7,16 @@ const yaml = require('yaml');
 const util = require('./util');
 
 const DEFAULT_ENV = 'development';
-const SERVER_CONFIG_FILEPATH = 'config/server.yml';
-const MIME_TYPES_FILEPATH = 'config/mime_types.yml';
+
+let serverCongigFilepath = fs.existsSync('user/server.yml') ? 'user/server.yml' : 'config/server.yml';
+let mimeTypesFilepath = fs.existsSync('user/mime_types.yml') ? 'user/mime_types.yml' : 'config/mime_types.yml';
 
 class Config {
   constructor() {
     let env = process.env.env || DEFAULT_ENV;
-    let rootConfig = getYamlFile(SERVER_CONFIG_FILEPATH);
+    let rootConfig = getYamlFile(serverCongigFilepath);
     util.merge(this, rootConfig.default, rootConfig[env], {env});
-    this.mimeTypes = getYamlFile(MIME_TYPES_FILEPATH);
+    this.mimeTypes = getYamlFile(mimeTypesFilepath);
   }
 }
 

@@ -126,6 +126,12 @@ void main() {
     this.dBuffer = [];
     this.tIdx = 0;
 
+    navigator.mediaDevices && navigator.mediaDevices.getUserMedia && navigator.mediaDevices.getUserMedia({video: true})
+      .then((stream) => this.initStream(stream))
+      .catch((err) => {
+        console.error(err);
+      });
+
     this.pixel = new Uint8Array([0x0, 0x0, 0x0,0xff]);
 
     this.sProgram = twgl.createProgramInfo(gl, [this.vertText, this.program.shaderText[0]]);
@@ -155,13 +161,26 @@ void main() {
     });
 
     this.uniforms.inputImage = gl.createTexture();
+    this.uniforms.cameraImage = gl.createTexture();
 
     this.initControls();
 
     this.resetTexture(this.uniforms.inputImage, true);
+    this.resetTexture(this.uniforms.cameraImage, true);
 
     this.resetCounter();
     this.animate();
+  }
+
+  initStream(stream) {
+    this.stream = stream;
+    this.videoCapture = document.createElement('video');
+    this.videoCapture.autoplay = true;
+    this.videoCapture.srcObject = this.stream;
+
+    this.videoFrame = new CanvasFrame('videoFrame', {dim: this.settings.dim, img: this.videoCapture});
+    this.videoFrame.loadSrc(this.stream);
+
   }
 
   initControls() {
@@ -196,6 +215,11 @@ void main() {
     const srcFormat = this.pixFmt;
     const srcType = gl.UNSIGNED_BYTE;
     gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, border, srcFormat, srcType, img);
+  }
+
+  updateVideoFrame() {
+    if (!this.videoCapture) return;
+
   }
 
 
@@ -237,6 +261,8 @@ void main() {
     });
     if (this.inputFrames?.[inputIdx])
       this.setTexture(this.uniforms.inputImage, this.inputFrames[inputIdx].canvas);
+    if (this.videoFrame)
+      this.setTexture(this.uniforms.cameraImage, this.videoFrame.canvas);
 
 
     uniforms.lastFrame = this.tBuffer[curIdx].attachments[0];

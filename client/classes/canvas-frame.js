@@ -9,6 +9,10 @@ class CanvasFrame {
     };
     Object.assign(this, defaults, args);
     this.name = name;
+    this.isActive = false;
+    this.updateQueued = 0;
+    if (this.img instanceof HTMLVideoElement)
+      this.isVideo = true;
     if (typeof this.dim == 'number')
       this.dim = [this.dim, this.dim];
 
@@ -18,6 +22,7 @@ class CanvasFrame {
     this.ctx.translate(this.dim[0] / 2, this.dim[1] / 2);
     this.loadImageFromDb();
 
+    if (!this.isVideo)
     this.img.onload = () => this.handleOnload();
   }
 
@@ -63,13 +68,38 @@ class CanvasFrame {
     input.click();
   }
 
-  loadSrc(url) {
-    this.img.src = url;
+  loadSrc(src) {
+    if (player.stream instanceof MediaStream) {
+      this.img.srcObject = src;
+      this.toggleActive(true);
+    }
+    else {
+      this.img.src = src;
+    }
+  }
+
+  updateFromStream() {
+    this.handleOnload();
+
+    this.updateQueued = Math.max(0, this.updateQueued - 1);
+    if (this.isActive && this.updateQueued == 0) {
+      this.updateQueued ++;
+      window.requestAnimationFrame(() => this.updateFromStream());
+    }
+  }
+
+  toggleActive(state) {
+    state = state != null ? state : !this.isActive;
+    this.isActive = state;
+    if (state && this.updateQueued == 0) {
+      this.updateQueued ++;
+      this.updateFromStream();
+    }
   }
 
   handleOnload() {
     let img = this.img;
-    let [w, h] = [img.width, img.height];
+    let [w, h] = this.isVideo ? [img.videoWidth, img.videoHeight] : [img.width, img.height];
     let r = w/h;
     let d = this.dim[0];
     if (w < h) {
