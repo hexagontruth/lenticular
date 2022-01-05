@@ -24,6 +24,7 @@ body {
   background: #000;
   color: #aaa;
   font-size: 0.5rem;
+  overflow: hidden;
 }
 
 button.active {
@@ -77,6 +78,9 @@ canvas {
     margin: 0.125rem;
     height: 1rem;
   }
+  #frame-field {
+    width: 6em;
+  }
   .message {
     cursor: default;
     opacity: 0;
@@ -114,5 +118,12 @@ canvas {
     input[type="range"] {
       width: 100%;
     }
+  }
+}
+
+.hideable {
+  transition: opacity 500ms;
+  &.hidden {
+    opacity: 0;
   }
 }

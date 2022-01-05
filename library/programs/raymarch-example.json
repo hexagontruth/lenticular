@@ -1,8 +1,5 @@
 {
   "shaders": [
-     "march-example.fs",
-     "pass.fs",
-     "pass.fs",
-     "display.fs"
+     "march-example.fs"
   ]
 }

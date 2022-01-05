@@ -32,14 +32,18 @@ const PLAYER_DEFAULT_UNIFORMS = {
 };
 
 class Player {
-  constructor(program, canvas, frames, status, message) {
-    this.program = program;
+  constructor(app) {
+    this.app = app;
+    this.program = app.program;
+    this.canvas = app.canvas;
+    this.frames = app.frames;
+    this.status = app.statusField;
+    this.message = app.messageField;
     this.settings = this.program.settings;
 
     this.settings.transferDim = this.settings.transferDim || this.settings.dim;
 
-    this.canvas = canvas;
-    canvas.width = canvas.height = this.settings.dim;
+    this.canvas.width = this.canvas.height = this.settings.dim;
 
     this.transferCanvas = document.createElement('canvas');
     this.transferCanvas.width = this.transferCanvas.height = this.settings.transferDim;
@@ -47,7 +51,6 @@ class Player {
     this.gl = this.canvas.getContext('webgl2');
     this.pixFmt = this.gl.RGBA;
 
-    this.frames = frames;
     this.uniforms = Util.merge({}, PLAYER_DEFAULT_UNIFORMS, this.settings.uniforms);
 
     this.uniformOverrides = Util.merge(Array(4).fill().map(() => []), this.settings.uniformOverrides || []);
@@ -59,9 +62,10 @@ class Player {
     }
 
     this.inputFrameCount = 0;
-    this.status = status;
-    this.message = message;
+    this.play = this.settings.play;
     this.recording = false;
+    this.videoCapture = null;
+    this.videoFrame = null;
 
     this.cursorDown = false;
     this.intervalTimer = null;
@@ -92,15 +96,25 @@ void main() {
     });
   }
 
-  initializeControls() {
-
+  togglePlay(val) {
+    val = val != null ? val : !this.play;
+    this.play = val;
+    if (this.play)
+      this.animate();
   }
 
-  togglePlay(v) {
-    v = v == null ? !this.settings.play : v;
-    this.settings.play = v;
-    if (this.settings.play)
-      this.animate();
+  toggleRecord(val) {
+    val = val != null ? val : !this.recording;
+    this.recording = val;
+    if (val) {
+      this.resetCounter();
+      fetch('/reset', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {'Content-Type': `text/plain`},
+        body: 'ohai i can haz reset plx?'
+      });
+    }
   }
 
   resetCounter() {
@@ -108,7 +122,7 @@ void main() {
     this.uniforms.time = 0;
     this.status.value = 0;
     this.initializeUniforms();
-    this.settings.play || this.animate();
+    this.play || this.animate();
   }
 
   async promptDownload() {
@@ -120,17 +134,12 @@ void main() {
   }
 
   init() {
+    console.log('wedgetown');
     let gl = this.gl;
     this.sBuffer = [];
     this.tBuffer = [];
     this.dBuffer = [];
     this.tIdx = 0;
-
-    navigator.mediaDevices && navigator.mediaDevices.getUserMedia && navigator.mediaDevices.getUserMedia({video: true})
-      .then((stream) => this.initStream(stream))
-      .catch((err) => {
-        console.error(err);
-      });
 
     this.pixel = new Uint8Array([0x0, 0x0, 0x0,0xff]);
 
@@ -172,15 +181,35 @@ void main() {
     this.animate();
   }
 
-  initStream(stream) {
+  setStream(stream) {
     this.stream = stream;
-    this.videoCapture = document.createElement('video');
-    this.videoCapture.autoplay = true;
-    this.videoCapture.srcObject = this.stream;
+    if (stream) {
+      this.videoCapture = document.createElement('video');
+      this.videoCapture.autoplay = true;
+      this.videoCapture.srcObject = this.stream;
 
-    this.videoFrame = new CanvasFrame('videoFrame', {dim: this.settings.dim, img: this.videoCapture});
-    this.videoFrame.loadSrc(this.stream);
+      let args = {
+        dim: this.settings.dim,
+        img: this.videoCapture,
+        fit: this.app.config.streamFit
+      };
+      this.videoFrame = new CanvasFrame(this.app, 'videoFrame', args);
+      this.videoFrame.loadSrc(this.stream);
+    }
+    // Remove stream
+    else {
+      this.videoCapture = null;
+      this.videoFrame = null;
+      this.resetTexture(this.uniforms.cameraImage, true);
+    }
+  }
 
+  setStreamFit(val) {
+    if (this.videoFrame && this.videoFrame.fit != val) {
+      this.videoFrame.fit = val;
+      this.videoFrame.clear();
+      this.resetTexture(this.uniforms.cameraImage, true);
+    }
   }
 
   initControls() {
@@ -318,7 +347,7 @@ void main() {
       let dataUrl = await this.transferCanvas.toDataURL('image/png', 1);
       this.postFrame(dataUrl);
     }
-    this.settings.play && this.setTimer(cond);
+    this.play && this.setTimer(cond);
   }
 
   initializeUniforms() {
@@ -361,7 +390,7 @@ void main() {
 
     // Create and load frames. TODO: Without canvases?
     this.inputFrames = Array(len).fill().map((e, i) => {
-      let frame = new CanvasFrame('inputFrame' + i, {dim: this.settings.dim});
+      let frame = new CanvasFrame(this.app, 'inputFrame' + i, {dim: this.settings.dim});
       frame.loadSrc('/input/' + imageList[i]);
       let task = new Promise((resolve, reject) => {
         frame.onload = () => {

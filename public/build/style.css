@@ -564,6 +564,7 @@ body {
   background: #000;
   color: #aaa;
   font-size: 0.5rem;
+  overflow: hidden;
 }
 
 button.active {
@@ -624,6 +625,9 @@ canvas {
   margin: 0.125rem;
   height: 1rem;
 }
+.toolbar-main #frame-field {
+  width: 6em;
+}
 .toolbar-main .message {
   cursor: default;
   opacity: 0;
@@ -661,6 +665,13 @@ canvas {
 }
 .menu-controls .control input[type=range] {
   width: 100%;
+}
+
+.hideable {
+  transition: opacity 500ms;
+}
+.hideable.hidden {
+  opacity: 0;
 }
 
 /*# sourceMappingURL=style.css.map */

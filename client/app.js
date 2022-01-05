@@ -1,174 +1,285 @@
-let CONF_PATH;
+let app;
 
-CONF_PATH = 'raymarch-example';
-
-const canvas = document.querySelector('#thecanvas');
-const recordButton = document.querySelector('button.icon-record');
-const stopButton = document.querySelector('button.icon-stop');
-const loadImagesButton = document.querySelector('button.icon-image');
-const status = document.querySelector('#framez'); // why tf is this called "status"?
-const message = document.querySelector('#message');
-
-let styleDim;
-
-let frames = [];
-document.querySelectorAll('.canvas-frame').forEach((e, i) => {
-  let frame = new CanvasFrame('canvas' + i, {canvas: e, dim: 4096});
-  e.addEventListener('dblclick', () => frame.loadImageFromPrompt());
-  frames.push(frame);
-});
-
-function parseArgs(str) {
-  let [p, q] = str.split('?');
-  q = q || '';
-  let pairs = q.split('&');
-  let obj = {};
-  for (let pair of pairs) {
-    let [k, v] = pair.split('=').map((e) => e.trim());
-    v = v || '';
-    obj[k] = v;
+class App {
+  static parseArgs(str) {
+    let [p, q] = str.split('?');
+    q = q || '';
+    let pairs = q.split('&');
+    let obj = {};
+    for (let pair of pairs) {
+      let [k, v] = pair.split('=').map((e) => e.trim());
+      v = v || '';
+      obj[k] = v;
+    }
+    return obj;
   }
-  return obj;
-}
-let args = parseArgs(location.href);
-let play = args.test == undefined;
-CONF_PATH = args.program || args.p || CONF_PATH;
 
-window.addEventListener('DOMContentLoaded', () => {
-  console.log('wedge');
+  constructor(programPath) {
+    this.canvas = App.CANVAS;
+    this.recordButton = App.RECORD_BUTTON;
+    this.playButton = App.PLAY_BUTTON;
+    this.loadImagesButton = App.LOAD_IMAGES_BUTTON;
+    this.webcamButton = App.WEBCAM_BUTTON;
+    this.statusField = App.STATUS_FIELD;
+    this.messageField = App.MESSAGE_FIELD;
+    this.main = App.MAIN_ELEMENT;
+    this.body = App.BODY_ELEMENT;
 
-  let main = document.querySelector('.main');
-  let body = document.querySelector('body');
-  let shiftString = '';
+    this.config = new Config(this);
 
-  window.addEventListener('keydown', (ev) => {
-    if (ev.ctrlKey && !ev.shiftKey) {
-      if (ev.key == 's') {
-        promptDownload();
+    this.programPath = programPath || App.DEFAULT_PROGRAM_PATH;
+
+    this.styleDim = null;
+    this.frames = [];
+    this.webcamStream = null;
+
+    this.configFromUrl();
+    this.initializeFrames();
+    this.initializeEventListeners();
+  }
+
+  configFromUrl() {
+    let args = App.parseArgs(location.href);
+    this.urlArgs = args;
+    this.play = args.test == undefined;
+    this.programPath = args.program || args.p || this.programPath;
+  }
+
+  togglePlay(val) {
+    val = val != null ? val : !this.player.play;
+    this.player.togglePlay(val);
+    this.playButton.classList.toggle('icon-play', !val);
+    this.playButton.classList.toggle('icon-stop', val);
+  }
+
+  toggleRecord(val) {
+    val = val != null ? val : !this.player.recording;
+    this.player.toggleRecord(val);
+    this.recordButton.classList.toggle('active', val);
+    this.recordButton.classList.toggle('icon-record', !val);
+    this.recordButton.classList.toggle('icon-stop', val);
+  }
+
+  toggleHidden(val) {
+    val = val != null ? val : !this.config.controlsHidden;
+    this.config.setControlsHidden(val);
+  }
+
+  toggleFit(val) {
+    if (val == null) {
+      val = this.config.fit == 'contain' ? 'cover' : 'contain';
+    }
+    this.config.setFit(val);
+  }
+
+  toggleStreamFit(val) {
+    if (val == null) {
+      val = this.config.streamFit == 'contain' ? 'cover' : 'contain';
+    }
+    this.config.setStreamFit(val);
+  }
+
+  toggleWebcam(val) {
+    val = val != null ? val : !this.webcamEnabled;
+    this.config.setWebcamEnabled(val);
+  }
+
+  set(key, val) {
+    this[key] = val;
+    if (key == 'controlsHidden') {
+      document.querySelectorAll('.hideable').forEach((el) => {
+        el.classList.toggle('hidden', val);
+      });
+    }
+    else if (key == 'fit') {
+      this.handleResize();
+    }
+    else if (key == 'streamFit') {
+      this.player?.setStreamFit(val); // This is horrendous
+    }
+    else if (key == 'webcamEnabled') {
+      this.webcamButton.classList.toggle('active', val);
+      if (val) {
+        let constraints = {
+          video: true
+        };
+        navigator.mediaDevices && navigator.mediaDevices.getUserMedia && navigator.mediaDevices.getUserMedia(constraints)
+        .then((stream) => {
+          this.player.setStream(stream)
+        })
+        .catch((err) => {
+          console.error(err);
+        });
       }
-      else if (ev.key.match(/^[0-9a-fA-F]$/)) {
-        shiftString += ev.key
+      else {
+        this.player.setStream();
+      }
+    }
+  }
+
+  clearMessages() {
+    this.messageField.classList.remove('visible');
+  }
+
+  initializeFrames() {
+    document.querySelectorAll('.canvas-frame').forEach((e, i) => {
+      let frame = new CanvasFrame(this, 'canvas' + i, {canvas: e, dim: 4096});
+      e.ondblclick = () => frame.loadImageFromPrompt();
+      this.frames.push(frame);
+    });
+  }
+
+  initializeEventListeners() {
+    // TODO: Move all this shit somewhere better
+    let shiftString = '';
+
+    window.addEventListener('keydown', (ev) => {
+      let key = ev.key.toLowerCase();
+      if (ev.ctrlKey && !ev.shiftKey) {
+        if (ev.key == 's') {
+          promptDownload();
+        }
+        else if (ev.key.match(/^[0-9a-fA-F]$/)) {
+          shiftString += ev.key
+        }
+        else {
+          return;
+        }
+        ev.preventDefault();
+      }
+      else if (ev.key == 'Escape') {
+        this.toggleHidden();
+      }
+      else if (ev.key == 'Tab') {
+        if (ev.shiftKey)
+          this.toggleRecord();
+        else
+          this.togglePlay();
+      }
+      else if (key == 'f') {
+        if (ev.shiftKey)
+          this.toggleStreamFit();
+        else
+          this.toggleFit();
+      }
+      else if (key == 'r') {
+        this.player.resetCounter();
+        return;
+      }
+      else if (key == 'w') {
+        this.toggleWebcam();
+      }
+      else if (ev.key == ' ') {
+        if (this.player.play)
+          this.togglePlay(false);
+        else
+          this.player.animate();
       }
       else {
         return;
       }
       ev.preventDefault();
-    }
-    else if (ev.key == 'Tab') {
-      player.togglePlay();
-    }
-    else if (ev.key == 'r') {
-      player.resetCounter();
-    }
-    else if (ev.key == ' ') {
-      if (player.settings.play)
-        player.togglePlay();
-      else
-        player.animate();
-    }
-    else {
-      return;
-    }
-    ev.preventDefault();
-  });
-  window.addEventListener('keyup', (ev) => {
-    if (ev.key == 'Control') {
-      if (shiftString.length == 3 || shiftString.length == 6) {
-        let code = '#' + shiftString;
-        body.style.backgroundColor = code;
-      }
-      shiftString = '';
-    }
-  });
-
-  window.addEventListener('resize', resize);
-  function resize() {
-    let [w, h] = [window.innerWidth, window.innerHeight];
-    if (w > h) {
-      main.style.top = main.style.bottom = '0';
-      main.style.left = main.style.right = ((w / h - 1) / 2 * h) + 'px';
-      styleDim = h;
-    }
-    else {
-      main.style.left = main.style.right = '0';
-      main.style.top = main.style.bottom = ((h / w - 1) / 2 * w) + 'px';
-      styleDim = w;
-    }
-  }
-  resize();
-
-  for (let group of document.querySelectorAll('.tabs')) {
-    let panes = Array.from(group.querySelectorAll('.tab-pane'));
-    let body = group.querySelector('.tab-body');
-    let select = document.querySelector('#tab-selector');
-    select.addEventListener('change', (ev) => {
-      let v = select.value;
-      v = parseInt(v);
-      panes.forEach((pane) => pane.classList.remove('active'));
-      panes[v].classList.add('active');
     });
-  }
+    window.addEventListener('keyup', (ev) => {
+      if (ev.key == 'Control') {
+        if (shiftString.length == 3 || shiftString.length == 6) {
+          let code = '#' + shiftString;
+          this.body.style.backgroundColor = code;
+        }
+        shiftString = '';
+      }
+    });
 
-  recordButton.onclick = () => {
-    player.recording = !player.recording;
-    if (player.recording) {
-      player.resetCounter();
-      fetch('/reset', {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {'Content-Type': `text/plain`},
-        body: 'ohai i can haz reset plx?'
+    window.addEventListener('resize', () => this.handleResize());
+
+    this.handleResize();
+
+    for (let group of document.querySelectorAll('.tabs')) {
+      let panes = Array.from(group.querySelectorAll('.tab-pane'));
+      let body = group.querySelector('.tab-body');
+      let select = document.querySelector('#tab-selector');
+      select.addEventListener('change', (ev) => {
+        let v = select.value;
+        v = parseInt(v);
+        panes.forEach((pane) => pane.classList.remove('active'));
+        panes[v].classList.add('active');
       });
     }
-    recordButton.innerHTML = player.recording ? 'Stop' : 'Start';
-    recordButton.classList.toggle('active', player.recording);
+
+    this.recordButton.onclick = () => this.toggleRecord();
+    this.playButton.onclick = () => this.togglePlay();
+    this.loadImagesButton.onclick = () => this.player.loadImages();
+    this.messageField.onclick = () => this.clearMessages();
+    this.webcamButton.onclick = () => this.toggleWebcam();
+
+    this.canvas.addEventListener('pointerdown', (ev) => this.handlePointer(ev));
+    this.canvas.addEventListener('pointerup', (ev) => this.handlePointer(ev));
+    this.canvas.addEventListener('pointerout', (ev) => this.handlePointer(ev));
+    this.canvas.addEventListener('pointercancel', (ev) => this.handlePointer(ev));
+    this.canvas.addEventListener('pointermove', (ev) => this.handlePointer(ev));
   }
 
-  stopButton.onclick = () => {
-    console.log('Stopping...');
-    player.togglePlay(false);
+  handleResize(ev) {
+    let [w, h] = [window.innerWidth, window.innerHeight];
+    let cond = this.config.fit == 'contain' ? w > h : w < h;
+    if (cond) {
+      this.main.style.top = this.main.style.bottom = '0';
+      this.main.style.left = this.main.style.right = ((w / h - 1) / 2 * h) + 'px';
+      this.styleDim = h;
+    }
+    else {
+      this.main.style.left = this.main.style.right = '0';
+      this.main.style.top = this.main.style.bottom = ((h / w - 1) / 2 * w) + 'px';
+      this.styleDim = w;
+    }
   }
 
-  loadImagesButton.onclick = () => {
-    player.loadImages()
-  }
-
-  message.onclick = () => {
-    message.classList.remove('visible');
-  }
-
-  canvas.addEventListener('pointerdown', handlePointer);
-  canvas.addEventListener('pointerup', handlePointer);
-  canvas.addEventListener('pointerout', handlePointer);
-  canvas.addEventListener('pointercancel', handlePointer);
-
-  canvas.addEventListener('pointermove', handlePointer);
-
-  function handlePointer(ev) {
-    if (!player?.uniforms)
+  handlePointer(ev) {
+    if (!this.player?.uniforms)
       return;
-    player.uniforms.cursorLast = player.uniforms.cursorPos;
-    player.uniforms.cursorPos = [
-      ev.offsetX / styleDim * 2 - 1,
-      ev.offsetY / styleDim * -2 + 1,
+    this.player.uniforms.cursorLast = this.player.uniforms.cursorPos;
+    this.player.uniforms.cursorPos = [
+      ev.offsetX / this.styleDim * 2 - 1,
+      ev.offsetY / this.styleDim * -2 + 1,
     ];
 
     if (ev.type == 'pointerdown') {
-      player.cursorDown = true;
-      player.uniforms.cursorLast = player.uniforms.cursorPos.slice();
+      this.player.cursorDown = true;
+      this.player.uniforms.cursorLast = this.player.uniforms.cursorPos.slice();
     }
     else if (ev.type == 'pointerup' || ev.type == 'pointerout' || ev.type == 'pointercancel') {
-      player.cursorDown = false;
+      this.player.cursorDown = false;
     }
 
-    player.uniforms.cursorAngle = Math.atan2(ev.offsetY, ev.offsetX);
+    this.player.uniforms.cursorAngle = Math.atan2(ev.offsetY, ev.offsetX);
   }
+
+  run() {
+    this.program = new Program(this);
+    this.program.onready = () => {
+      this.player = new Player(this);
+      this.player.init();
+      this.config.init();
+    };
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  console.log('wedge');
+  app = new App();
+  app.run();
 
 });
 
-let program = new Program(CONF_PATH);
-let player;
-program.onready = () => {
-  player = new Player(program, canvas, frames, status, message);
-  player.init();
-};
+App = Object.assign(App, {
+  DEFAULT_PROGRAM_PATH: 'raymarch-example',
+  CANVAS: document.querySelector('#thecanvas'),
+  RECORD_BUTTON: document.querySelector('#record-button'),
+  PLAY_BUTTON: document.querySelector('#play-button'),
+  LOAD_IMAGES_BUTTON: document.querySelector('#load-images-button'),
+  WEBCAM_BUTTON: document.querySelector('#webcam-button'),
+  STATUS_FIELD: document.querySelector('#frame-field'),
+  MESSAGE_FIELD: document.querySelector('#message-field'),
+  MAIN_ELEMENT: document.querySelector('.main'),
+  BODY_ELEMENT: document.querySelector('body')
+});

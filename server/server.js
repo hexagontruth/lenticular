@@ -29,9 +29,6 @@ class Server {
       let file = await util.readFile(util.join(this.config.input, req.params.inputFile));
       let mime = util.mimeFromBuffer(file);
       console.log(mime);
-      // ext =
-      //   num == 0x47 ? 'imag/gif' :
-      //   num ==
       res.end(file);
     });
     this.app.post('/reset', (req, res) => {

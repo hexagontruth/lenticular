@@ -4,11 +4,12 @@
   <link rel="stylesheet" type="text/css" href="build/style.css"/>
   <title>Lenticular</title>
 <body>
-<nav class="toolbar toolbar-main">
-  <button class="icon-record" title="Record"></button>
-  <button class="icon-stop" title="Stop"></button>
-  <button class="icon-image" title="Load images from input directory"></button>
-  <input id="framez" type="text"/>
+<nav class="toolbar toolbar-main hideable hidden">
+  <button id="record-button" class="icon-record" title="Record"></button>
+  <button id="play-button" class="icon-stop" title="Stop"></button>
+  <button id="load-images-button" class="icon-image-multiple" title="Load images from input directory"></button>
+  <button id="webcam-button" class="icon-camcorder" title="Activate webcam"></button>
+  <input id="frame-field" type="text" readonly/>
   <select id="tab-selector">
     <option value="0" selected default>Render</option>
     <option value="1">Draw1</option>
@@ -16,7 +17,7 @@
     <option value="3">Draw3</option>
     <option value="4">Draw4</option>
   </select>
-  <div class="message" id="message"></div>
+  <div class="message" id="message-field"></div>
 </nav>
 <main class="main">
   <section class="tabs">
@@ -37,7 +38,7 @@
     </div>
   </section>
 </main>
-<menu class="menu-controls">
+<menu class="menu-controls hideable hidden">
 </menu>
 
 </canvas>

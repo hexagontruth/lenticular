@@ -9,24 +9,25 @@ const PROGRAM_DEFAULTS = {
     gridSize: 360,
     epochs: 6,
   },
-  play: true,
+  play: true
 };
 
 class Program {
-  constructor(...args) {
+  constructor(app, ...args) {
     this.merge(PROGRAM_DEFAULTS);
+    for (let arg of args) {
+      this.merge(arg);
+    }
+
     this.resetTasks();
     this.pendingFiles = {};
     this.pendingCallbacks = {};
     this.loadedFiles = {};
-    for (let arg of args) {
-      if (typeof arg == 'string') {
-        this.runTask(() => this.load(arg));
-      }
-      else if (typeof arg == 'object') {
-        this.merge(arg);
-      }
-    }
+
+    this.app = app;
+    this.programPath = this.app.programPath;
+
+    this.runTask(() => this.load(this.programPath));
     this.updateSettings();
     this.checkReady();
   }

@@ -1,0 +1,10 @@
+{
+  "controls": {
+    "hexelSize": [0.0625, 0.00390625, 0.25, 0.00390625],
+    "hexelBorder": [0, 0, 1, 0.01],
+    "updateCoef": [0.5, 0, 1, 0.01]
+  },
+  "shaders": [
+     "webcam-example.fs"
+  ]
+}

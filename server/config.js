@@ -8,8 +8,9 @@ const util = require('./util');
 
 const DEFAULT_ENV = 'development';
 
-let serverCongigFilepath = fs.existsSync('user/server.yml') ? 'user/server.yml' : 'config/server.yml';
-let mimeTypesFilepath = fs.existsSync('user/mime_types.yml') ? 'user/mime_types.yml' : 'config/mime_types.yml';
+let serverCongigFilepath = process.env.config ||
+  (fs.existsSync('user/server.yml') ? 'user/server.yml' : 'config/server.yml');
+let mimeTypesFilepath = 'config/mime_types.yml';
 
 class Config {
   constructor() {

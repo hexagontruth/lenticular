@@ -1,8 +1,5 @@
 {
   "shaders": [
-     "blob-example.fs",
-     "pass.fs",
-     "pass.fs",
-     "display.fs"
+     "blob-example.fs"
   ]
 }

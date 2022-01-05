@@ -1,13 +1,15 @@
 class CanvasFrame {
-  constructor(name, args={}) {
+  constructor(app, name, args={}) {
     let defaults = {
       canvas: args.canvas || document.createElement('canvas'),
       img: args.img || new Image(),
       dim: 1440,
       session: args.session || Session.get(),
       drawFn: null,
+      fit: "cover"
     };
     Object.assign(this, defaults, args);
+    this.app = app;
     this.name = name;
     this.isActive = false;
     this.updateQueued = 0;
@@ -69,7 +71,7 @@ class CanvasFrame {
   }
 
   loadSrc(src) {
-    if (player.stream instanceof MediaStream) {
+    if (this.isVideo) {
       this.img.srcObject = src;
       this.toggleActive(true);
     }
@@ -102,7 +104,8 @@ class CanvasFrame {
     let [w, h] = this.isVideo ? [img.videoWidth, img.videoHeight] : [img.width, img.height];
     let r = w/h;
     let d = this.dim[0];
-    if (w < h) {
+    let cond = this.fit == "contain" ? w > h : w < h;
+    if (cond) {
       w = d;
       h = d/r;
     }
@@ -112,6 +115,10 @@ class CanvasFrame {
     }
     this.ctx.drawImage(img, -w/2, -h/2, w, h);
     this.onload && this.onload();
+  }
+
+  clear() {
+    this.ctx.clearRect(-this.dim[0]/2, -this.dim[1]/2, ...this.dim);
   }
 
   draw() {
