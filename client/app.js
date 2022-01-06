@@ -20,6 +20,7 @@ class App {
     this.playButton = App.PLAY_BUTTON;
     this.loadImagesButton = App.LOAD_IMAGES_BUTTON;
     this.webcamButton = App.WEBCAM_BUTTON;
+    this.screenShareButton = App.SCREEN_SHARE_BUTTON;
     this.statusField = App.STATUS_FIELD;
     this.messageField = App.MESSAGE_FIELD;
     this.main = App.MAIN_ELEMENT;
@@ -31,7 +32,6 @@ class App {
 
     this.styleDim = null;
     this.frames = [];
-    this.webcamStream = null;
 
     this.configFromUrl();
     this.initializeFrames();
@@ -80,12 +80,16 @@ class App {
   }
 
   toggleWebcam(val) {
-    val = val != null ? val : !this.webcamEnabled;
+    val = val != null ? val : !this.config.webcamEnabled;
     this.config.setWebcamEnabled(val);
   }
 
+  toggleScreenShare(val) {
+    val = val != null ? val : !this.config.screenShareEnabled;
+    this.config.setScreenShareEnabled(val);
+  }
+
   set(key, val) {
-    this[key] = val;
     if (key == 'controlsHidden') {
       document.querySelectorAll('.hideable').forEach((el) => {
         el.classList.toggle('hidden', val);
@@ -99,21 +103,11 @@ class App {
     }
     else if (key == 'webcamEnabled') {
       this.webcamButton.classList.toggle('active', val);
-      if (val) {
-        let constraints = {
-          video: true
-        };
-        navigator.mediaDevices && navigator.mediaDevices.getUserMedia && navigator.mediaDevices.getUserMedia(constraints)
-        .then((stream) => {
-          this.player.setStream(stream)
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-      }
-      else {
-        this.player.setStream();
-      }
+      this.player.setStream(val ? this.config.stream : null);
+    }
+    else if (key == 'screenShareEnabled') {
+      this.screenShareButton.classList.toggle('active', val);
+      this.player.setStream(val ? this.config.stream : null);
     }
   }
 
@@ -166,6 +160,9 @@ class App {
         this.player.resetCounter();
         return;
       }
+      else if (key == 's') {
+        this.toggleScreenShare();
+      }
       else if (key == 'w') {
         this.toggleWebcam();
       }
@@ -211,6 +208,7 @@ class App {
     this.loadImagesButton.onclick = () => this.player.loadImages();
     this.messageField.onclick = () => this.clearMessages();
     this.webcamButton.onclick = () => this.toggleWebcam();
+    this.screenShareButton.onclick = () => this.toggleScreenShare();
 
     this.canvas.addEventListener('pointerdown', (ev) => this.handlePointer(ev));
     this.canvas.addEventListener('pointerup', (ev) => this.handlePointer(ev));
@@ -278,6 +276,7 @@ App = Object.assign(App, {
   PLAY_BUTTON: document.querySelector('#play-button'),
   LOAD_IMAGES_BUTTON: document.querySelector('#load-images-button'),
   WEBCAM_BUTTON: document.querySelector('#webcam-button'),
+  SCREEN_SHARE_BUTTON: document.querySelector('#screen-share-button'),
   STATUS_FIELD: document.querySelector('#frame-field'),
   MESSAGE_FIELD: document.querySelector('#message-field'),
   MAIN_ELEMENT: document.querySelector('.main'),

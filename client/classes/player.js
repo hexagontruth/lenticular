@@ -134,7 +134,6 @@ void main() {
   }
 
   init() {
-    console.log('wedgetown');
     let gl = this.gl;
     this.sBuffer = [];
     this.tBuffer = [];
@@ -182,6 +181,7 @@ void main() {
   }
 
   setStream(stream) {
+    let oldStream = this.stream;
     this.stream = stream;
     if (stream) {
       this.videoCapture = document.createElement('video');
@@ -198,6 +198,11 @@ void main() {
     }
     // Remove stream
     else {
+      if (oldStream) {
+        oldStream.getTracks().forEach((track) => {
+          track.readyState == 'live' && track.stop();
+        });
+      }
       this.videoCapture = null;
       this.videoFrame = null;
       this.resetTexture(this.uniforms.cameraImage, true);
@@ -288,7 +293,7 @@ void main() {
     this.uniforms.images.forEach((e, i) => {
       this.setTexture(e, this.frames[i].canvas);
     });
-    if (this.inputFrames?.[inputIdx])
+    if (this.inputFrameCount && this.inputFrames?.[inputIdx])
       this.setTexture(this.uniforms.inputImage, this.inputFrames[inputIdx].canvas);
     if (this.videoFrame)
       this.setTexture(this.uniforms.cameraImage, this.videoFrame.canvas);
@@ -387,6 +392,9 @@ void main() {
     let imageList = await this.getInputList();
     let len = imageList.length;
     let tasks = [];
+
+    this.inputFrameCount = 0;
+    this.inputFrames = [];
 
     // Create and load frames. TODO: Without canvases?
     this.inputFrames = Array(len).fill().map((e, i) => {

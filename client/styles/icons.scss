@@ -3,7 +3,7 @@
 */
 @font-face {
   font-family: 'hexular-icons';
-  src: url('/assets/icons.woff2?v=0.6') format('woff2');
+  src: url('/assets/icons.woff2?v=0.7') format('woff2');
   font-weight: normal;
   font-style: normal;
 }
@@ -55,13 +55,13 @@
 .icon-clear:before { content: '\e810'; }
 .icon-cloud-code:before { content: '\e811'; }
 .icon-cloud-download:before { content: '\e812'; }
-.icon-code:before { content: '\e813'; }
-.icon-cloud-upload:before { content: '\e814'; }
+.icon-cloud-upload:before { content: '\e813'; }
+.icon-code:before { content: '\e814'; }
 .icon-color-fill:before { content: '\e815'; }
 .icon-compass:before { content: '\e816'; }
 .icon-delta:before { content: '\e817'; }
-.icon-dots-horizontal:before { content: '\e818'; }
-.icon-dots-vertical:before { content: '\e819'; }
+.icon-dots-vertical:before { content: '\e818'; }
+.icon-dots-horizontal:before { content: '\e819'; }
 .icon-download:before { content: '\e81a'; }
 .icon-extension:before { content: '\e81b'; }
 .icon-eye:before { content: '\e81c'; }
@@ -69,8 +69,8 @@
 .icon-flower:before { content: '\e81e'; }
 .icon-function:before { content: '\e81f'; }
 .icon-gear:before { content: '\e820'; }
-.icon-heart:before { content: '\e821'; }
-.icon-hexagon:before { content: '\e822'; }
+.icon-hexagon:before { content: '\e821'; }
+.icon-heart:before { content: '\e822'; }
 .icon-hexagon-left:before { content: '\e823'; }
 .icon-hexagon-multiple:before { content: '\e824'; }
 .icon-hexagon-multiple-outline:before { content: '\e825'; }
@@ -162,3 +162,4 @@
 .icon-weather-sunny:before { content: '\e87b'; }
 .icon-yin-yang:before { content: '\e87c'; }
 .icon-zoom:before { content: '\e87d'; }
+.icon-screen-share:before { content: '\e87e'; }

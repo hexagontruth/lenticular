@@ -4,7 +4,7 @@
 */
 @font-face {
   font-family: "hexular-icons";
-  src: url("/assets/icons.woff2?v=0.6") format("woff2");
+  src: url("/assets/icons.woff2?v=0.7") format("woff2");
   font-weight: normal;
   font-style: normal;
 }
@@ -112,11 +112,11 @@
   content: "";
 }
 
-.icon-code:before {
+.icon-cloud-upload:before {
   content: "";
 }
 
-.icon-cloud-upload:before {
+.icon-code:before {
   content: "";
 }
 
@@ -132,11 +132,11 @@
   content: "";
 }
 
-.icon-dots-horizontal:before {
+.icon-dots-vertical:before {
   content: "";
 }
 
-.icon-dots-vertical:before {
+.icon-dots-horizontal:before {
   content: "";
 }
 
@@ -168,11 +168,11 @@
   content: "";
 }
 
-.icon-heart:before {
+.icon-hexagon:before {
   content: "";
 }
 
-.icon-hexagon:before {
+.icon-heart:before {
   content: "";
 }
 
@@ -538,6 +538,10 @@
 
 .icon-zoom:before {
   content: "";
+}
+
+.icon-screen-share:before {
+  content: "";
 }
 
 * {

@@ -3,6 +3,7 @@ class Config {
     return {
       controlsHidden: false,
       fit: 'contain',
+      screenShareEnabled: false,
       streamFit: 'cover',
       webcamEnabled: false,
       localStorageObj: window.localStorage,
@@ -32,6 +33,7 @@ class Config {
     this.setFit();
     this.setStreamFit();
     this.setWebcamEnabled();
+    this.setScreenShareEnabled();
   }
 
   setControlsHidden(val) {
@@ -48,6 +50,29 @@ class Config {
     this.app?.set('fit', val);
   }
 
+  setScreenShareEnabled(val) {
+    val = val != null ? val : this.screenShareEnabled;
+    if (val) {
+      navigator.mediaDevices.getDisplayMedia()
+      .then((stream) => {
+        this.setWebcamEnabled(false);
+        this.screenShareEnabled = true;
+        this.stream = stream;
+        this.storeSessionConfig({screenShareEnabled: true});
+        this.app?.set('screenShareEnabled', true);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    }
+    else {
+      this.screenShareEnabled = false;
+      this.stream = null;
+      this.storeSessionConfig({screenShareEnabled: false});
+      this.app?.set('screenShareEnabled', val);
+    }
+  }
+
   setStreamFit(val) {
     val = val != null ? val : this.streamFit;
     this.streamFit = val;
@@ -57,9 +82,28 @@ class Config {
 
   setWebcamEnabled(val) {
     val = val != null ? val : this.webcamEnabled;
-    this.webcamEnabled = val;
-    this.storeSessionConfig({webcamEnabled: val});
-    this.app?.set('webcamEnabled', val);
+    if (val) {
+      let constraints = {
+        video: true
+      };
+      navigator.mediaDevices.getUserMedia(constraints)
+      .then((stream) => {
+        this.setScreenShareEnabled(false);
+        this.webcamEnabled = true;
+        this.stream = stream;
+        this.storeSessionConfig({webcamEnabled: true});
+        this.app?.set('webcamEnabled', true);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    }
+    else {
+      this.webcamEnabled = false;
+      this.stream = null;
+      this.storeSessionConfig({webcamEnabled: false});
+      this.app?.set('webcamEnabled', false);
+    }
   }
 
   // --- STORAGE ---
@@ -75,6 +119,7 @@ class Config {
     let sessionConfig = this.getKeyValues([
       'controlsHidden',
       'fit',
+      'screenShareEnabled',
       'streamFit',
       'webcamEnabled',
     ]);
