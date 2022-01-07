@@ -106,13 +106,43 @@ void main() {
   toggleRecord(val) {
     val = val != null ? val : !this.recording;
     this.recording = val;
+    val && this.resetCounter();
+    if (this.app.config.recordVideo) {
+      if (val) {
+        fetch('/video/start', {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {'Content-Type': `text/plain`},
+          body: 'start teh video plz'
+        });
+      }
+      else {
+        fetch('/video/end', {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {'Content-Type': `text/plain`},
+          body: 'stop teh video plz kthxbai'
+        });
+      }
+    }
+  }
+
+  setRecordImages() {
+    let val = this.app.config.recordImages;
     if (val) {
-      this.resetCounter();
-      fetch('/reset', {
+      fetch('/images/start', {
         method: 'POST',
         mode: 'no-cors',
         headers: {'Content-Type': `text/plain`},
-        body: 'ohai i can haz reset plx?'
+        body: 'record image files plz'
+      });
+    }
+    else {
+      fetch('/images/end', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {'Content-Type': `text/plain`},
+        body: 'stop recording image files plz'
       });
     }
   }
@@ -331,7 +361,7 @@ void main() {
     this.runProgram(this.cProgram, 3);
 
     this.status.value = uniforms.counter;
-    this.endFrame();
+    this.endFrame(uniforms.counter);
     uniforms.counter += 1;
     uniforms.time = (uniforms.counter / uniforms.duration) % 1;
     uniforms.fTime = (uniforms.time * settings.epochs) % 1;
@@ -345,12 +375,12 @@ void main() {
     }
   }
 
-  async endFrame() {
+  async endFrame(frameIdx) {
     let cond = this.frameCond(this.uniforms)
     if (this.recording && cond) {
       this.transferCtx.drawImage(this.canvas, 0, 0, this.settings.transferDim, this.settings.transferDim);
       let dataUrl = await this.transferCanvas.toDataURL('image/png', 1);
-      this.postFrame(dataUrl);
+      this.postFrame(dataUrl, frameIdx);
     }
     this.play && this.setTimer(cond);
   }
@@ -374,9 +404,9 @@ void main() {
     }
   }
 
-  async postFrame(dataUrl) {
+  async postFrame(dataUrl, frameIdx) {
     try {
-      await fetch('/', {
+      await fetch(`/frame/${frameIdx}`, {
         method: 'POST',
         mode: 'no-cors',
         headers: {'Content-Type': `text/plain`},

@@ -4,14 +4,13 @@ default:
   height: 1440
   fps: 30
   codec: libx264
-  crf: 10
+  crf: 15
   input: input
   output: output
   saveImages: true
-  saveVideo: false
+  saveVideo: true
   imageFilename: frame-#####
-  imageStartIndex: 0
-  videoFilename: video.mp4
+  videoFilename: video-##.mp4
   files:
     client.js:
       - common/*.js

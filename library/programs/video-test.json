@@ -1,0 +1,8 @@
+{
+  "uniforms": {
+    "duration": 360
+  },
+  "shaders": [
+    "video-test.fs"
+  ]
+}

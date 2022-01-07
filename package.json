@@ -11,6 +11,8 @@
     "sass": "bin/sass.sh",
     "start": "./index.js start",
     "build": "./index.js build",
+    "cp": "bin/cp.sh",
+    "clear": "bin/clear.sh",
     "test": "echo \"lol no\" && exit 1"
   },
   "keywords": [

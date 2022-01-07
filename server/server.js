@@ -13,8 +13,14 @@ class Server {
   constructor(config) {
     this.app = express();
     this.config = util.merge({}, config);
-    this.resetIndex();
-    this.idxChars = this.config.imageFilename.match(/\#+/)[0].length;
+
+    this.imageIdxChars = this.config.imageFilename.match(/\#+/)[0].length;
+    this.videoIdxChars = this.config.videoFilename.match(/\#+/)[0].length;
+    this.videoIdx = 0;
+    this.enableImages = this.config.saveImages;
+    this.enableVideo = this.config.saveVideo;
+    this.recordingImages = false;
+    this.recordingVideo = false;
 
     execSync(`mkdir -p ${this.config.output} ${this.config.input}`);
 
@@ -31,41 +37,38 @@ class Server {
       console.log(mime);
       res.end(file);
     });
-    this.app.post('/reset', (req, res) => {
-      this.resetIndex();
-      res.end('sure lol');
-    })
-    this.app.post('/', (req, res) => {
+    this.app.post('/video/:status', (req, res) => {
+      if (req.params.status == 'start') {
+        this.startVideo(res);
+        res.end('probably okay idk');
+      }
+      else if (req.params.status == 'end') {
+        this.endVideo(res);
+      }
+    });
+    this.app.post('/images/:status', (req, res) => {
+      // This is highly problematic but I can't be fucked rn to include it in the frame POST body or URL params
+      if (req.params.status == 'start') {
+        console.log('Image recording on');
+        this.recordingImages = true;
+      }
+      else if (req.params.status == 'end') {
+        console.log('Image recording off');
+        this.recordingImages = false;
+      }
+      res.end('okay lol');
+    });
+    this.app.post('/frame/:frameIdx', (req, res) => {
       this.processData(req);
       res.end('lgtm');
     });
   }
 
-  resetIndex() {
-    this.idx = this.config.imageStartIndex;
-  }
-
-  start() {
-    this.config.saveVideo && this.startEncoder();
-
-    this.app.listen(this.config.port, () => {
-      console.log(`Listening on port ${this.config.port} lol...`);
-    });
-    process.on('SIGINT', () => {
-      if (this.child) {
-        this.child.stdin.end();
-        this.child.on('exit', () => {
-          console.log('Exiting thing...');
-          process.exit();
-        });
-      }
-      else {
-        process.exit();
-      }
-    });
-  }
-
-  startEncoder() {
+  startVideo(res) {
+    if (this.child || !this.enableVideo) return;
+    this.recordingVideo = true;
+    let filepath = pth.join(this.config.output, this.config.videoFilename);
+    filepath = this.generateFilepath(filepath, this.videoIdxChars, this.videoIdx++);
     let args = [
       '-y',
       '-c:v', 'png',
@@ -77,15 +80,39 @@ class Server {
       '-vf', `scale=${this.config.width}x${this.config.height}`,
       '-c:v', this.config.codec,
       '-crf', `${this.config.crf}`,
-      pth.join(this.config.output, this.config.videoFilename),
+      filepath,
     ];
     this.child = spawn('ffmpeg', args, {stdio: ['pipe', 'pipe', 'pipe']});
-    this.child.on('exit', () => console.log('Exiting encoder...'));
+    this.child.on('exit', () => {
+      console.log('Exiting encoder...');
+    });
     this.child.stdout.on('data', (data) => {
       console.log(`ENCODER: ${data}`);
     });
     this.child.stderr.on('data', (data) => {
       console.error(`ENCODER: ${data}`);
+    });
+  }
+
+  endVideo(res) {
+    if (this.child) {
+      this.recordingVideo = false;
+      this.child.stdin.end();
+      this.child.on('exit', () => {
+        this.child = null;
+        console.log('Done lol');
+        res?.end('okay');
+      });
+    }
+  }
+
+  start() {
+    this.app.listen(this.config.port, () => {
+      console.log(`Listening on port ${this.config.port} lol...`);
+    });
+    process.on('SIGINT', () => {
+      this.endVideo();
+      process.exit();
     });
   }
 
@@ -97,17 +124,23 @@ class Server {
       let ext = this.config.mimeTypes[match[1]];
       let base64 = data.slice(data.indexOf(',') + 1);
       let buf = Buffer.from(base64, 'base64');
-      if (this.config.saveImages) {
+      if (this.enableImages && this.recordingImages) {
+        let idx = parseInt(req.params.frameIdx);
         let filepath = pth.join(this.config.output, this.config.imageFilename + ext);
-        let idxString = ('0'.repeat(this.idxChars) + (this.idx ++)).slice(-this.idxChars);
-        filepath = filepath.replace(/\#+/, idxString);
+        filepath = this.generateFilepath(filepath, this.imageIdxChars, idx);
         console.log(`Writing "${filepath}"...`)
         fs.writeFileSync(filepath, buf);
       }
-      if (this.config.saveVideo) {
-        this.child.stdin.write(buf);
+      if (this.enableVideo && this.recordingVideo) {
+        this.child?.stdin.write(buf);
       }
     });
+  }
+
+  generateFilepath(path, idxChars, idx) {
+    let idxString = ('0'.repeat(idxChars) + (idx)).slice(-idxChars);
+    path = path.replace(/\#+/, idxString);
+    return path;
   }
 }
 

@@ -21,6 +21,8 @@ class App {
     this.loadImagesButton = App.LOAD_IMAGES_BUTTON;
     this.webcamButton = App.WEBCAM_BUTTON;
     this.screenShareButton = App.SCREEN_SHARE_BUTTON;
+    this.recordImagesButton = App.RECORD_IMAGES_BUTTON;
+    this.recordVideoButton = App.RECORD_VIDEO_BUTTON;
     this.statusField = App.STATUS_FIELD;
     this.messageField = App.MESSAGE_FIELD;
     this.main = App.MAIN_ELEMENT;
@@ -58,6 +60,7 @@ class App {
     this.recordButton.classList.toggle('active', val);
     this.recordButton.classList.toggle('icon-record', !val);
     this.recordButton.classList.toggle('icon-stop', val);
+    this.recordVideoButton.disabled = val;
   }
 
   toggleHidden(val) {
@@ -89,6 +92,16 @@ class App {
     this.config.setScreenShareEnabled(val);
   }
 
+  toggleRecordImages(val) {
+    val = val != null ? val : !this.config.recordImages;
+    this.config.setRecordImages(val);
+  }
+
+  toggleRecordVideo(val) {
+    val = val != null ? val : !this.config.recordVideo;
+    this.config.setRecordVideo(val);
+  }
+
   set(key, val) {
     if (key == 'controlsHidden') {
       document.querySelectorAll('.hideable').forEach((el) => {
@@ -103,11 +116,18 @@ class App {
     }
     else if (key == 'webcamEnabled') {
       this.webcamButton.classList.toggle('active', val);
-      this.player.setStream(val ? this.config.stream : null);
+      this.player?.setStream(val ? this.config.stream : null);
     }
     else if (key == 'screenShareEnabled') {
       this.screenShareButton.classList.toggle('active', val);
-      this.player.setStream(val ? this.config.stream : null);
+      this.player?.setStream(val ? this.config.stream : null);
+    }
+    else if (key == 'recordImages') {
+      this.recordImagesButton.classList.toggle('active', val);
+      this.player?.setRecordImages();
+    }
+    else if (key == 'recordVideo') {
+      this.recordVideoButton.classList.toggle('active', val);
     }
   }
 
@@ -209,6 +229,8 @@ class App {
     this.messageField.onclick = () => this.clearMessages();
     this.webcamButton.onclick = () => this.toggleWebcam();
     this.screenShareButton.onclick = () => this.toggleScreenShare();
+    this.recordImagesButton.onclick = () => this.toggleRecordImages();
+    this.recordVideoButton.onclick = () => this.toggleRecordVideo();
 
     this.canvas.addEventListener('pointerdown', (ev) => this.handlePointer(ev));
     this.canvas.addEventListener('pointerup', (ev) => this.handlePointer(ev));
@@ -277,6 +299,8 @@ App = Object.assign(App, {
   LOAD_IMAGES_BUTTON: document.querySelector('#load-images-button'),
   WEBCAM_BUTTON: document.querySelector('#webcam-button'),
   SCREEN_SHARE_BUTTON: document.querySelector('#screen-share-button'),
+  RECORD_IMAGES_BUTTON: document.querySelector('#record-images-button'),
+  RECORD_VIDEO_BUTTON: document.querySelector('#record-video-button'),
   STATUS_FIELD: document.querySelector('#frame-field'),
   MESSAGE_FIELD: document.querySelector('#message-field'),
   MAIN_ELEMENT: document.querySelector('.main'),

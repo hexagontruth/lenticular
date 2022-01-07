@@ -3,6 +3,8 @@ class Config {
     return {
       controlsHidden: false,
       fit: 'contain',
+      recordImages: true,
+      recordVideo: false,
       screenShareEnabled: false,
       streamFit: 'cover',
       webcamEnabled: false,
@@ -34,6 +36,8 @@ class Config {
     this.setStreamFit();
     this.setWebcamEnabled();
     this.setScreenShareEnabled();
+    this.setRecordImages();
+    this.setRecordVideo();
   }
 
   setControlsHidden(val) {
@@ -50,6 +54,20 @@ class Config {
     this.app?.set('fit', val);
   }
 
+  setRecordImages(val) {
+    val = val != null ? val : this.recordImages;
+    this.recordImages = val;
+    this.storeSessionConfig({recordImages: val});
+    this.app?.set('recordImages', val);
+  }
+
+  setRecordVideo(val) {
+    val = val != null ? val : this.recordVideo;
+    this.recordVideo = val;
+    this.storeSessionConfig({recordVideo: val});
+    this.app?.set('recordVideo', val);
+  }
+
   setScreenShareEnabled(val) {
     val = val != null ? val : this.screenShareEnabled;
     if (val) {
@@ -63,6 +81,7 @@ class Config {
       })
       .catch((err) => {
         console.error(err);
+        this.setScreenShareEnabled(false);
       });
     }
     else {
@@ -84,7 +103,8 @@ class Config {
     val = val != null ? val : this.webcamEnabled;
     if (val) {
       let constraints = {
-        video: true
+        video: true,
+        audio: false
       };
       navigator.mediaDevices.getUserMedia(constraints)
       .then((stream) => {
@@ -96,6 +116,7 @@ class Config {
       })
       .catch((err) => {
         console.error(err);
+        this.setWebcamEnabled(false);
       });
     }
     else {
@@ -119,6 +140,8 @@ class Config {
     let sessionConfig = this.getKeyValues([
       'controlsHidden',
       'fit',
+      'recordImages',
+      'recordVideo',
       'screenShareEnabled',
       'streamFit',
       'webcamEnabled',
