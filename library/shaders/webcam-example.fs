@@ -21,7 +21,7 @@ void main() {
   cv = hex2cart(pix);
 
 
-  c = texture(cameraImage, cv * 0.5 + 0.5).rgb;
+  c = texture(streamImage, cv * 0.5 + 0.5).rgb;
 
   c = c * smoothstep(hexelBorder - q, hexelBorder, 1. - amax(cel));
 

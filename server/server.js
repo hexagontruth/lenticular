@@ -17,9 +17,7 @@ class Server {
     this.imageIdxChars = this.config.imageFilename.match(/\#+/)[0].length;
     this.videoIdxChars = this.config.videoFilename.match(/\#+/)[0].length;
     this.videoIdx = 0;
-    this.enableImages = this.config.saveImages;
-    this.enableVideo = this.config.saveVideo;
-    this.recordingImages = false;
+    this.enableImages = false;
     this.recordingVideo = false;
 
     execSync(`mkdir -p ${this.config.output} ${this.config.input}`);
@@ -49,12 +47,12 @@ class Server {
     this.app.post('/images/:status', (req, res) => {
       // This is highly problematic but I can't be fucked rn to include it in the frame POST body or URL params
       if (req.params.status == 'start') {
-        console.log('Image recording on');
-        this.recordingImages = true;
+        console.log('Image recording enabled');
+        this.enableImages = true;
       }
       else if (req.params.status == 'end') {
-        console.log('Image recording off');
-        this.recordingImages = false;
+        console.log('Image recording disabled');
+        this.enableImages = false;
       }
       res.end('okay lol');
     });
@@ -65,7 +63,7 @@ class Server {
   }
 
   startVideo(res) {
-    if (this.child || !this.enableVideo) return;
+    if (this.recordingVideo) return;
     this.recordingVideo = true;
     let filepath = pth.join(this.config.output, this.config.videoFilename);
     filepath = this.generateFilepath(filepath, this.videoIdxChars, this.videoIdx++);
@@ -95,7 +93,7 @@ class Server {
   }
 
   endVideo(res) {
-    if (this.child) {
+    if (this.recordingVideo) {
       this.recordingVideo = false;
       this.child.stdin.end();
       this.child.on('exit', () => {
@@ -124,14 +122,14 @@ class Server {
       let ext = this.config.mimeTypes[match[1]];
       let base64 = data.slice(data.indexOf(',') + 1);
       let buf = Buffer.from(base64, 'base64');
-      if (this.enableImages && this.recordingImages) {
+      if (this.enableImages) {
         let idx = parseInt(req.params.frameIdx);
         let filepath = pth.join(this.config.output, this.config.imageFilename + ext);
         filepath = this.generateFilepath(filepath, this.imageIdxChars, idx);
         console.log(`Writing "${filepath}"...`)
         fs.writeFileSync(filepath, buf);
       }
-      if (this.enableVideo && this.recordingVideo) {
+      if (this.recordingVideo) {
         this.child?.stdin.write(buf);
       }
     });

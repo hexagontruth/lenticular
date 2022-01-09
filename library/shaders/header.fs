@@ -32,7 +32,7 @@ uniform sampler2D tNew;
 uniform sampler2D dNew;
 uniform sampler2D[4] images;
 uniform sampler2D inputImage;
-uniform sampler2D cameraImage;
+uniform sampler2D streamImage;
 
 out vec4 fragColor;
 

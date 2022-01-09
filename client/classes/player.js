@@ -199,12 +199,12 @@ void main() {
     });
 
     this.uniforms.inputImage = gl.createTexture();
-    this.uniforms.cameraImage = gl.createTexture();
+    this.uniforms.streamImage = gl.createTexture();
 
     this.initControls();
 
     this.resetTexture(this.uniforms.inputImage, true);
-    this.resetTexture(this.uniforms.cameraImage, true);
+    this.resetTexture(this.uniforms.streamImage, true);
 
     this.resetCounter();
     this.animate();
@@ -235,7 +235,7 @@ void main() {
       }
       this.videoCapture = null;
       this.videoFrame = null;
-      this.resetTexture(this.uniforms.cameraImage, true);
+      this.resetTexture(this.uniforms.streamImage, true);
     }
   }
 
@@ -243,7 +243,7 @@ void main() {
     if (this.videoFrame && this.videoFrame.fit != val) {
       this.videoFrame.fit = val;
       this.videoFrame.clear();
-      this.resetTexture(this.uniforms.cameraImage, true);
+      this.resetTexture(this.uniforms.streamImage, true);
     }
   }
 
@@ -326,7 +326,7 @@ void main() {
     if (this.inputFrameCount && this.inputFrames?.[inputIdx])
       this.setTexture(this.uniforms.inputImage, this.inputFrames[inputIdx].canvas);
     if (this.videoFrame)
-      this.setTexture(this.uniforms.cameraImage, this.videoFrame.canvas);
+      this.setTexture(this.uniforms.streamImage, this.videoFrame.canvas);
 
 
     uniforms.lastFrame = this.tBuffer[curIdx].attachments[0];

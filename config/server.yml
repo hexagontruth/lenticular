@@ -7,8 +7,6 @@ default:
   crf: 15
   input: input
   output: output
-  saveImages: true
-  saveVideo: true
   imageFilename: frame-#####
   videoFilename: video-##.mp4
   files:
