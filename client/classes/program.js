@@ -99,11 +99,12 @@ class Program {
   }
 
   async loadShaders() {
+    let passPath = 'pass.fs';
     let paths = this.settings?.shaders || [];
-    paths = Util.merge(Array(4).fill('pass.fs'), paths);
+    paths = Util.merge(Array(4).fill(passPath), paths);
     this.shaderText = Array(paths.lengths);
     await Promise.all(paths.map(async (path, idx) => {
-      this.shaderText[idx] = await this.loadShader(path);
+      this.shaderText[idx] = await this.loadShader(path[0] != '#' ? path : passPath);
     }));
   }
 
