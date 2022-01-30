@@ -9,7 +9,8 @@ const PROGRAM_DEFAULTS = {
     gridSize: 360,
     epochs: 6,
   },
-  play: true
+  play: true,
+  preserveDrawingBuffer: true
 };
 
 class Program {

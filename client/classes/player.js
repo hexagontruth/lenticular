@@ -48,7 +48,7 @@ class Player {
     this.transferCanvas = document.createElement('canvas');
     this.transferCanvas.width = this.transferCanvas.height = this.settings.transferDim;
     this.transferCtx = this.transferCanvas.getContext('2d');
-    this.gl = this.canvas.getContext('webgl2');
+    this.gl = this.canvas.getContext('webgl2', {preserveDrawingBuffer: this.settings.preserveDrawingBuffer});
     this.pixFmt = this.gl.RGBA;
 
     this.uniforms = Util.merge({}, PLAYER_DEFAULT_UNIFORMS, this.settings.uniforms);
@@ -156,9 +156,10 @@ void main() {
   }
 
   async promptDownload() {
-    let uri = await this.canvas.toDataURL('image/png', 1);
+    let uri = await this.getTransferUrl();
     let a = document.createElement('a');
     a.href = uri;
+    window.test = uri;
     a.download = `frame-${('0000' + this.uniforms.counter).slice(-4)}.png`;
     a.click();
   }
@@ -378,11 +379,16 @@ void main() {
   async endFrame(frameIdx) {
     let cond = this.frameCond(this.uniforms)
     if (this.recording && cond) {
-      this.transferCtx.drawImage(this.canvas, 0, 0, this.settings.transferDim, this.settings.transferDim);
-      let dataUrl = await this.transferCanvas.toDataURL('image/png', 1);
+      let dataUrl = await this.getTransferUrl();
       this.postFrame(dataUrl, frameIdx);
     }
     this.play && this.setTimer(cond);
+  }
+
+  async getTransferUrl() {
+    this.transferCtx.drawImage(this.canvas, 0, 0, this.settings.transferDim, this.settings.transferDim);
+    let dataUrl = await this.transferCanvas.toDataURL('image/png', 1);
+    return dataUrl;
   }
 
   initializeUniforms() {

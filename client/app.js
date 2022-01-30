@@ -151,7 +151,7 @@ class App {
       let key = ev.key.toLowerCase();
       if (ev.ctrlKey && !ev.shiftKey) {
         if (ev.key == 's') {
-          promptDownload();
+          this.player.promptDownload();
         }
         else if (ev.key.match(/^[0-9a-fA-F]$/)) {
           shiftString += ev.key
