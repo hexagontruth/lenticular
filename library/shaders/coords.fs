@@ -66,7 +66,33 @@ vec3 interpolatedCubic(vec3 p, out vec3 v[3]) {
     q[i] = 1. - amax(v[i] - p);
 
   q = q / sum(q);
+
+  // I don't remember how the rest of this function even works so I'm just adding this here
+  if (q.y < q.z) {
+    q.yz = q.zy;
+    vec3 temp = v[1];
+    v[1] = v[2];
+    v[2] = temp;
+  }
   return q;
+}
+
+vec3 extendedCubic(vec3 p, out vec3 v[12]) {
+  vec3 r, v3[3], dif;
+  r = interpolatedCubic(p, v3);
+  // Is there no better way to do this in glsl?
+  v[0] = v3[0];
+  v[1] = v3[1];
+  v[2] = v3[2];
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < 2; j++) {
+      dif = v[(i + j + 1) % 3] - v[(i + j + 2) % 3];
+      v[3 + j + i * 3] = v[i] - dif;
+    }
+    dif = v[i] - v[(i + 1) % 3];
+    v[5 + i * 3] = v[i] + dif;
+  }
+  return r;
 }
 
 vec3 getCubic(vec3 p) {
