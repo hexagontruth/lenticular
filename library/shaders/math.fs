@@ -450,3 +450,11 @@ float getPartial(float t, float n, float cur) {
   val = clamp(val, 0., 1.);
   return val;
 }
+
+float qw(float n, float q, float w) {
+  return smoothstep(w/2. + q/2., w/2. - q/2., abs(n));
+}
+
+float qwp(float n, float q, float w) {
+  return qw(abs(fract(n + 0.5) - 0.5), q, w);
+}
