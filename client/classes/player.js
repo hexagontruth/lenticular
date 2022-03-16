@@ -208,7 +208,7 @@ void main() {
     this.resetTexture(this.uniforms.streamImage, true);
 
     this.resetCounter();
-    this.animate();
+    this.play && this.animate();
   }
 
   setStream(stream) {
