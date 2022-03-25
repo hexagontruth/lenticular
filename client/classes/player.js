@@ -160,7 +160,7 @@ void main() {
     let a = document.createElement('a');
     a.href = uri;
     window.test = uri;
-    a.download = `frame-${('0000' + this.uniforms.counter).slice(-4)}.png`;
+    a.download = `frame-${('0000' + (this.uniforms.counter - 1)).slice(-4)}.png`;
     a.click();
   }
 
@@ -254,7 +254,11 @@ void main() {
       this.uniforms[control.name] = control.value;
     };
     for (let [key, value] of Object.entries(this.settings.controls || {})) {
-      let control = new FloatControl(key, ...value);
+      let control;
+      if (value.length == 4)
+        control = new FloatControl(key, ...value);
+      else if (value.length == 1)
+        control = new BooleanControl(key, ...value);
       control.onchange = updateFn;
       updateFn(control);
       this.controls.push(control);
