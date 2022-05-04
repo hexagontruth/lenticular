@@ -45,6 +45,7 @@ class App {
     this.urlArgs = args;
     this.play = args.test == undefined;
     this.programPath = args.program || args.p || this.programPath;
+    this.overrideDim = parseInt(args.dim || 0);
   }
 
   togglePlay(val) {

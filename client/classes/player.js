@@ -41,6 +41,8 @@ class Player {
     this.message = app.messageField;
     this.settings = this.program.settings;
 
+    this.settings.dim = this.app.overrideDim || this.settings.dim;
+
     this.settings.transferDim = this.settings.transferDim || this.settings.dim;
 
     this.canvas.width = this.canvas.height = this.settings.dim;
