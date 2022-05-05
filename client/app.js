@@ -278,9 +278,15 @@ class App {
   run() {
     this.program = new Program(this);
     this.program.onready = () => {
-      this.player = new Player(this);
-      this.player.init();
-      this.config.init();
+      try {
+        this.player = new Player(this);
+        this.player.init();
+        this.config.init();
+      }
+      catch (e) {
+        console.error('o teh noes');
+        console.error(e);
+      }
     };
   }
 }

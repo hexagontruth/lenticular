@@ -55,6 +55,9 @@ class Program {
     if (this.settings?.shaders?.length) {
       this.runTask(() => this.loadShaders());
     }
+    if (this.settings?.sketches?.length) {
+      this.runTask(() => this.loadSketches());
+    }
   }
 
   resetTasks() {
@@ -97,6 +100,24 @@ class Program {
     let json = await response.json();
     this.merge(json);
     this.updateSettings();
+  }
+
+  async loadSketches() {
+    let paths = this.settings?.sketches || [];
+    paths = paths.filter((path) => path[0] != '#');
+    this.sketches = [];
+    await Promise.all(paths.map(async (path, idx) => {
+      this.sketches[idx] = await this.loadSketch(path);
+    }));
+  }
+
+  async loadSketch(path) {
+    let response = await fetch('data/sketches/' + path);
+    if (response.status != 200)
+      throw new LenticularError(response);
+    let text = await response.text();
+    let sketch = new Sketch(this, text);
+    return sketch;
   }
 
   async loadShaders() {

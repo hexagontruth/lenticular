@@ -41,6 +41,8 @@ class Player {
     this.message = app.messageField;
     this.settings = this.program.settings;
 
+    this.sketches = this.program.sketches || [];
+
     this.settings.dim = this.app.overrideDim || this.settings.dim;
 
     this.settings.transferDim = this.settings.transferDim || this.settings.dim;
@@ -210,6 +212,11 @@ void main() {
     this.resetTexture(this.uniforms.streamImage, true);
 
     this.resetCounter();
+
+    this.sketches.forEach((sketch, idx) => {
+      sketch.init(this.frames[idx]);
+      sketch.setup();
+    });
     this.play && this.animate();
   }
 
@@ -328,6 +335,11 @@ void main() {
     uniforms.size = [gl.drawingBufferWidth, gl.drawingBufferHeight];
 
     this.uniforms.images.forEach((e, i) => {
+      this.sketches[i] && this.sketches[i].draw({
+        counter: uniforms.counter,
+        duration: uniforms.duration,
+        time: uniforms.time
+      });
       this.setTexture(e, this.frames[i].canvas);
     });
     if (this.inputFrameCount && this.inputFrames?.[inputIdx])
