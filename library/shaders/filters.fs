@@ -6,9 +6,8 @@ float gaussian(vec3 v, float sd) {
   return 1./(pow(tau, 3./2.) * sd * sd * sd) * exp(-(v.x * v.x + v.y * v.y + v.z * v.z) / (2. * sd * sd));
 }
 
-vec4 gaussianBlur(int range, float sd) {
+vec4 gaussianBlur(int range, float sd, vec2 uv) {
   vec4 s, n;
-  vec2 uv = gl_FragCoord.xy / size;
   float d, ds;
   int i, j;
   i = j = -range;
@@ -25,6 +24,11 @@ vec4 gaussianBlur(int range, float sd) {
   }
   s /= ds;
   return s;
+}
+
+vec4 gaussianBlur(int range, float sd) {
+  vec2 uv = gl_FragCoord.xy / size;
+  return gaussianBlur(range, sd, uv);
 }
 
 vec4 medianFilter() {
