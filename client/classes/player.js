@@ -45,7 +45,7 @@ class Player {
 
     this.settings.dim = this.app.overrideDim || this.settings.dim;
 
-    this.settings.transferDim = this.settings.transferDim || this.settings.dim;
+    this.settings.transferDim = this.app.overrideTransferDim || this.settings.transferDim || this.settings.dim;
 
     this.canvas.width = this.canvas.height = this.settings.dim;
 
