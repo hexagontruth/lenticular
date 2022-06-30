@@ -33,8 +33,10 @@ const PLAYER_DEFAULT_UNIFORMS = {
 
 class Player {
   constructor(app) {
+    console.log('Creating player...');
     this.app = app;
     this.program = app.program;
+    this.shaderCount = this.program.shaderCount;
     this.canvas = app.canvas;
     this.frames = app.frames;
     this.status = app.statusField;
@@ -53,11 +55,17 @@ class Player {
     this.transferCanvas.width = this.transferCanvas.height = this.settings.transferDim;
     this.transferCtx = this.transferCanvas.getContext('2d');
     this.gl = this.canvas.getContext('webgl2', {preserveDrawingBuffer: this.settings.preserveDrawingBuffer});
+    this.gl.getExtension('EXT_color_buffer_float');
+
     this.pixFmt = this.gl.RGBA;
+    this.internalFmt = this.gl.RGBA; // TODO: Figure this out
 
     this.uniforms = Util.merge({}, PLAYER_DEFAULT_UNIFORMS, this.settings.uniforms);
+    this.uniformOverrides = Util.merge(Array(this.shaderCount.length).fill().map(() => []), this.settings.uniformOverrides || []);
 
-    this.uniformOverrides = Util.merge(Array(4).fill().map(() => []), this.settings.uniformOverrides || []);
+    this.gl.viewport(0, 0, this.settings.dim, this.settings.dim);
+    this.uniforms.size = [this.settings.dim, this.settings.dim];
+
     this.frameCond = (n) => {
       let skipCond = n.counter % this.settings.skip == 0;
       let startCond = n.counter >= this.settings.start;
@@ -85,7 +93,7 @@ in vec2 position;
 void main() {
   gl_Position = vec4(position.xy, 0, 1);
 }
-`;
+`.trim();
   }
 
   setTimer(cond) {
@@ -155,7 +163,7 @@ void main() {
     this.uniforms.counter = 0;
     this.uniforms.time = 0;
     this.status.value = 0;
-    this.initializeUniforms();
+    this.clearProgramTextures();
     this.play || this.animate();
   }
 
@@ -169,33 +177,18 @@ void main() {
   }
 
   init() {
-    let gl = this.gl;
-    this.sBuffer = [];
-    this.tBuffer = [];
-    this.dBuffer = [];
+    console.log('Initializing player...');
+    let { gl } = this;
+
+    this.shaderPrograms = this.program.shaderText.map((fragText) => {
+      let shaderProgram = new ShaderProgram(this, this.vertText, fragText);
+      shaderProgram.setup();
+      return shaderProgram;
+    });
+
     this.tIdx = 0;
 
     this.pixel = new Uint8Array([0x0, 0x0, 0x0,0xff]);
-
-    this.sProgram = twgl.createProgramInfo(gl, [this.vertText, this.program.shaderText[0]]);
-    this.tProgram = twgl.createProgramInfo(gl, [this.vertText, this.program.shaderText[1]]);
-    this.dProgram = twgl.createProgramInfo(gl, [this.vertText, this.program.shaderText[2]]);
-    this.cProgram = twgl.createProgramInfo(gl, [this.vertText, this.program.shaderText[3]]);
-
-    this.quadBuf = twgl.createBufferInfoFromArrays(gl, {
-      position: {
-        numComponents: 2,
-        data: new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1])
-      }
-    });
-    this.attachments = [{format: this.pixFmt}];
-    this.sBuffer.push(twgl.createFramebufferInfo(gl, this.attachments));
-    this.sBuffer.push(twgl.createFramebufferInfo(gl, this.attachments));
-    this.tBuffer.push(twgl.createFramebufferInfo(gl, this.attachments));
-    this.tBuffer.push(twgl.createFramebufferInfo(gl, this.attachments));
-    this.dBuffer.push(twgl.createFramebufferInfo(gl, this.attachments));
-    this.dBuffer.push(twgl.createFramebufferInfo(gl, this.attachments));
-    this.initializeUniforms();
 
     this.uniforms.images = Array(4).fill().map((e, i) => {
       let tex = gl.createTexture();
@@ -206,10 +199,10 @@ void main() {
     this.uniforms.inputImage = gl.createTexture();
     this.uniforms.streamImage = gl.createTexture();
 
-    this.initControls();
-
     this.resetTexture(this.uniforms.inputImage, true);
     this.resetTexture(this.uniforms.streamImage, true);
+
+    this.initControls();
 
     this.resetCounter();
 
@@ -217,6 +210,7 @@ void main() {
       sketch.init(this.frames[idx]);
       sketch.setup();
     });
+
     this.play && this.animate();
   }
 
@@ -286,43 +280,23 @@ void main() {
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
     const level = 0;
-    const internalFormat = this.pixFmt;
     const width = 1;
     const height = 1;
     const border = 0;
-    const srcFormat = this.pixFmt;
-    const srcType = gl.UNSIGNED_BYTE;
-    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, border, srcFormat, srcType, img);
-  }
-
-  updateVideoFrame() {
-    if (!this.videoCapture) return;
-
-  }
-
-
-  runProgram(program, idx=0) {
-    let gl = this.gl;
-    gl.useProgram(program.program);
-    twgl.setBuffersAndAttributes(gl, program, this.quadBuf);
-    let uniforms = Util.merge({}, this.uniforms, this.uniformOverrides[idx]);
-    twgl.setUniforms(program, uniforms);
-    twgl.drawBufferInfo(gl, this.quadBuf, gl.TRIANGLE_STRIP);
+    gl.texImage2D(gl.TEXTURE_2D, 0, this.internalFmt, width, height, border, this.pixFmt, gl.UNSIGNED_BYTE, img);
   }
 
   setTexture(tex, data) {
-    let gl = this.gl;
+    let { gl } = this;
     gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, this.pixFmt, this.pixFmt, gl.UNSIGNED_BYTE, data);
+    gl.texImage2D(gl.TEXTURE_2D, 0, this.internalFmt, this.pixFmt, gl.UNSIGNED_BYTE, data);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   }
 
   animate() {
-    let gl = this.gl;
-    let uniforms = this.uniforms;
-    let settings = this.settings;
+    let { gl, uniforms, settings, shaderCount, shaderPrograms } = this;
 
     let curIdx = this.tIdx;
     let nextIdx = (curIdx + 1) % 2;
@@ -331,10 +305,7 @@ void main() {
 
     uniforms.cursor = this.cursorDown ? uniforms.cursor + 1 : 0;
 
-    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-    uniforms.size = [gl.drawingBufferWidth, gl.drawingBufferHeight];
-
-    this.uniforms.images.forEach((e, i) => {
+    uniforms.images.forEach((e, i) => {
       this.sketches[i] && this.sketches[i].draw({
         counter: uniforms.counter,
         duration: uniforms.duration,
@@ -343,41 +314,42 @@ void main() {
       this.setTexture(e, this.frames[i].canvas);
     });
     if (this.inputFrameCount && this.inputFrames?.[inputIdx])
-      this.setTexture(this.uniforms.inputImage, this.inputFrames[inputIdx].canvas);
+      this.setTexture(uniforms.inputImage, this.inputFrames[inputIdx].canvas);
     if (this.videoFrame)
-      this.setTexture(this.uniforms.streamImage, this.videoFrame.canvas);
+      this.setTexture(uniforms.streamImage, this.videoFrame.canvas);
 
+    // Backwards compatibility with the unfortunately-named s/t/d pipeline (it made some sense at the time)
 
-    uniforms.lastFrame = this.tBuffer[curIdx].attachments[0];
+    uniforms.sNew = shaderPrograms[0]?.textures[nextIdx];
+    uniforms.tNew = shaderPrograms[1]?.textures[nextIdx];
+    uniforms.dNew = shaderPrograms[2]?.textures[nextIdx];
 
-    uniforms.sNew = this.sBuffer[nextIdx].attachments[0];
-    uniforms.tNew = this.tBuffer[nextIdx].attachments[0];
-    uniforms.dNew = this.dBuffer[nextIdx].attachments[0];
+    uniforms.sBuffer = shaderPrograms[0]?.textures[curIdx];
+    uniforms.tBuffer = shaderPrograms[1]?.textures[curIdx];
+    uniforms.dBuffer = shaderPrograms[2]?.textures[curIdx];
 
-    uniforms.sBuffer = this.sBuffer[curIdx].attachments[0];
-    uniforms.tBuffer = this.tBuffer[curIdx].attachments[0];
-    uniforms.dBuffer = this.dBuffer[curIdx].attachments[0];
+    shaderPrograms.forEach((shaderProgram, i) => {
+      let li = (i + shaderCount - 1) % shaderCount;
+      let lastTexture = shaderPrograms[i].textures[curIdx];
+      let inputTexture = shaderPrograms[li].textures[nextIdx];
 
-    uniforms.bufferImage = this.sBuffer[curIdx].attachments[0];
-    uniforms.lastFrame = this.tBuffer[curIdx].attachments[0];
-    uniforms.lastBuffer = this.sBuffer[curIdx].attachments[0];
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.sBuffer[nextIdx].framebuffer);
-    this.runProgram(this.sProgram, 0);
+      if (shaderCount > 1 && i == 0) {
+        inputTexture = shaderPrograms[shaderCount - 2].textures[curIdx];
+      }
+      uniforms.lastTexture = lastTexture;
+      uniforms.inputTexture = inputTexture;
 
-    uniforms.bufferImage = this.sBuffer[nextIdx].attachments[0];
-    uniforms.lastBuffer = this.tBuffer[curIdx].attachments[0];
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.tBuffer[nextIdx].framebuffer);
-    this.runProgram(this.tProgram, 1);
+      // More backwards compatibility stuff
+      uniforms.bufferImage = inputTexture;
+      uniforms.lastFrame = lastTexture;
+      uniforms.lastBuffer = lastTexture; // Idk what this was supposed to be?
 
-    uniforms.bufferImage = this.tBuffer[nextIdx].attachments[0];
-    uniforms.lastFrame = this.dBuffer[curIdx].attachments[0];
-    uniforms.lastBuffer = this.dBuffer[curIdx].attachments[0];
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.dBuffer[nextIdx].framebuffer);
-    this.runProgram(this.dProgram, 2);
-
-    uniforms.bufferImage = this.dBuffer[nextIdx].attachments[0];
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    this.runProgram(this.cProgram, 3);
+      shaderProgram.setUniforms(uniforms);
+      let framebuffer = i < shaderCount - 1 ? shaderPrograms[i].framebuffers[nextIdx] : null;
+      gl.useProgram(shaderProgram.program);
+      gl.bindFramebuffer(gl.FRAMEBUFFER,framebuffer);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    });
 
     this.status.value = uniforms.counter;
     this.endFrame(uniforms.counter);
@@ -409,8 +381,8 @@ void main() {
     return dataUrl;
   }
 
-  initializeUniforms() {
-    this.clearTexture([].concat(this.sBuffer, this.tBuffer, this.dBuffer));
+  clearProgramTextures() {
+    this.shaderPrograms.forEach((e) => e.clearTextures());
   }
 
   clearTexture(txs) {
@@ -424,7 +396,7 @@ void main() {
     }
     for (let texture of txs) {
       gl.bindTexture(gl.TEXTURE_2D, texture.attachments[0]);
-      gl.texImage2D(gl.TEXTURE_2D, 0, this.pixFmt, w, h, 0, this.pixFmt, gl.UNSIGNED_BYTE, data);
+      gl.texImage2D(gl.TEXTURE_2D, 0, this.internalFormat, w, h, 0, this.pixFmt, gl.UNSIGNED_BYTE, data);
     }
   }
 

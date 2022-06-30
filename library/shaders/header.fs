@@ -1,6 +1,7 @@
 #version 300 es
 #ifdef GL_ES
   precision highp float;
+  precision highp sampler2D;
 #endif
 
 // #version 300 es
@@ -22,6 +23,9 @@ uniform float ap;
 uniform float inap;
 uniform vec3 unit;
 
+uniform sampler2D inputTexture;
+uniform sampler2D lastTexture;
+
 uniform sampler2D bufferImage;
 uniform sampler2D lastBuffer;
 uniform sampler2D sBuffer;
@@ -34,7 +38,7 @@ uniform sampler2D[4] images;
 uniform sampler2D inputImage;
 uniform sampler2D streamImage;
 
-out vec4 fragColor;
+out highp vec4 fragColor;
 
 vec3 col_b = vec3(1./24., 1./48., 1./72.);
 vec3 col_w = 1. - vec3(1./36., 1./24., 1./12.);

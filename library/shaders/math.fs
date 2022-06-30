@@ -208,7 +208,8 @@ float vmin(vec3 v) {
 }
 
 float osc(float n) {
-  return sin((n - 0.25) * tau) * 0.5 + 0.5;
+  n -= 0.25;
+  return sin(n * tau) * 0.5 + 0.5;
 }
 
 vec2 osc(vec2 n) {

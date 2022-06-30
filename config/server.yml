@@ -12,6 +12,5 @@ default:
   files:
     client.js:
       - common/*.js
-      - client/vendor/*.js
       - client/classes/*.js
       - client/app.js

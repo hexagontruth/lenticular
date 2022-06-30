@@ -15,6 +15,7 @@ const PROGRAM_DEFAULTS = {
 
 class Program {
   constructor(app, ...args) {
+    console.log('Creating program...');
     this.merge(PROGRAM_DEFAULTS);
     for (let arg of args) {
       this.merge(arg);
@@ -122,9 +123,9 @@ class Program {
 
   async loadShaders() {
     let passPath = 'pass.fs';
-    let paths = this.settings?.shaders || [];
-    paths = Util.merge(Array(4).fill(passPath), paths);
-    this.shaderText = Array(paths.lengths);
+    let paths = this.settings?.shaders || [passPath];
+    this.shaderCount = paths.length;
+    this.shaderText = Array(paths.length);
     await Promise.all(paths.map(async (path, idx) => {
       this.shaderText[idx] = await this.loadShader(path[0] != '#' ? path : passPath);
     }));

@@ -15,6 +15,7 @@ class App {
   }
 
   constructor(programPath) {
+    console.log('Creating app...');
     this.canvas = App.CANVAS;
     this.recordButton = App.RECORD_BUTTON;
     this.playButton = App.PLAY_BUTTON;
@@ -293,7 +294,6 @@ class App {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  console.log('wedge');
   app = new App();
   app.run();
 
