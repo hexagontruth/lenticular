@@ -67,27 +67,42 @@ class ShaderProgram {
   setUniforms(uniforms) {
     let { gl, program } = this;
     let textureIdx = 0;
+    let textureMap = new Map();
     gl.useProgram(this.program);
+    let primitives = [], textures = [];
     for (let [key, value] of Object.entries(uniforms)) {
       if (value == null) continue;
+      value = Array.isArray(value) ? value : [value];
+      if (value[0] instanceof WebGLTexture)
+        textures.push([key, value]);
+      else
+        primitives.push([key, value]);
+    }
+
+    // console.log('SHADER PROGRAM', this.player.shaderPrograms.indexOf(this));
+    for (let [key, value] of textures) {
       let idx = gl.getUniformLocation(program, key);
-      if (!value.length) {
-        value = [value];
+      let cur = textureMap.get(value[0]);
+      let ptrArray = []
+      for (let texture of value) {
+        let ptr = textureMap.get(texture);
+        ptr = ptr != null ? ptr : textureIdx++;
+        textureMap.set(texture, ptr);
+        ptrArray.push(ptr);
+        this.setTexture(key, texture, ptr);
       }
+      // console.log(key, JSON.stringify(ptrArray));
+      gl.uniform1iv(idx, ptrArray);
+    }
+
+    for (let [key, value] of primitives) {
+      let idx = gl.getUniformLocation(program, key);
       let length = value.length;
       if (length > 4) {
         length = 1;
       }
       let type = typeof value[0] == 'boolean' ? 'i' : 'f';
       let fnKey = 'uniform%1%2v'.replace('%1', length).replace('%2', type);
-      if (value[0] instanceof WebGLTexture) {
-        let textures = value;
-        value = textureIdx;
-        fnKey = 'uniform1i';
-        for (let texture of textures) {
-          this.setTexture(key, texture, textureIdx++);
-        }
-      }
       gl[fnKey](idx, value);
     }
   }
@@ -95,7 +110,6 @@ class ShaderProgram {
   setTexture(name, texture, idx) {
     let { gl } = this;
     let enumKey = 'TEXTURE%'.replace('%', idx);
-    let uniformLoc = gl.getUniformLocation(this.program, name);
     gl.activeTexture(gl[enumKey]);
     gl.bindTexture(gl.TEXTURE_2D, texture);
   }

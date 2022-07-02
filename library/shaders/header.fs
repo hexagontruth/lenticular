@@ -38,6 +38,9 @@ uniform sampler2D[4] images;
 uniform sampler2D inputImage;
 uniform sampler2D streamImage;
 
+uniform sampler2D[8] lastTextures;
+uniform sampler2D[8] nextTextures;
+
 out highp vec4 fragColor;
 
 vec3 col_b = vec3(1./24., 1./48., 1./72.);

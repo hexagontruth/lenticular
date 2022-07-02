@@ -198,9 +198,10 @@ void main() {
 
     this.uniforms.inputImage = gl.createTexture();
     this.uniforms.streamImage = gl.createTexture();
-
     this.resetTexture(this.uniforms.inputImage, true);
     this.resetTexture(this.uniforms.streamImage, true);
+    this.uniforms.lastTextures = Array(this.shaderCount - 1).fill();
+    this.uniforms.nextTextures = Array(this.shaderCount - 1).fill();
 
     this.initControls();
 
@@ -298,8 +299,8 @@ void main() {
   animate() {
     let { gl, uniforms, settings, shaderCount, shaderPrograms } = this;
 
-    let curIdx = this.tIdx;
-    let nextIdx = (curIdx + 1) % 2;
+    let lastIdx = this.tIdx;
+    let nextIdx = (lastIdx + 1) % 2;
     let inputIdx = this.inputFrameCount == 0 ? 0 : uniforms.counter % this.inputFrameCount;
     this.tIdx = nextIdx;
 
@@ -318,23 +319,27 @@ void main() {
     if (this.videoFrame)
       this.setTexture(uniforms.streamImage, this.videoFrame.canvas);
 
+    for (let i = 0; i < this.shaderCount - 1; i++) {
+      uniforms.lastTextures[i] = shaderPrograms[i]?.textures[lastIdx];
+      uniforms.nextTextures[i] = shaderPrograms[i]?.textures[nextIdx];
+    }
     // Backwards compatibility with the unfortunately-named s/t/d pipeline (it made some sense at the time)
 
     uniforms.sNew = shaderPrograms[0]?.textures[nextIdx];
     uniforms.tNew = shaderPrograms[1]?.textures[nextIdx];
     uniforms.dNew = shaderPrograms[2]?.textures[nextIdx];
 
-    uniforms.sBuffer = shaderPrograms[0]?.textures[curIdx];
-    uniforms.tBuffer = shaderPrograms[1]?.textures[curIdx];
-    uniforms.dBuffer = shaderPrograms[2]?.textures[curIdx];
+    uniforms.sBuffer = shaderPrograms[0]?.textures[lastIdx];
+    uniforms.tBuffer = shaderPrograms[1]?.textures[lastIdx];
+    uniforms.dBuffer = shaderPrograms[2]?.textures[lastIdx];
 
     shaderPrograms.forEach((shaderProgram, i) => {
       let li = (i + shaderCount - 1) % shaderCount;
-      let lastTexture = shaderPrograms[i].textures[curIdx];
+      let lastTexture = shaderPrograms[i].textures[lastIdx];
       let inputTexture = shaderPrograms[li].textures[nextIdx];
 
       if (shaderCount > 1 && i == 0) {
-        inputTexture = shaderPrograms[shaderCount - 2].textures[curIdx];
+        inputTexture = shaderPrograms[shaderCount - 2].textures[lastIdx];
       }
       uniforms.lastTexture = lastTexture;
       uniforms.inputTexture = inputTexture;
