@@ -71,14 +71,14 @@ class ShaderProgram {
     gl.useProgram(this.program);
     let primitives = [], textures = [];
     for (let [key, value] of Object.entries(uniforms)) {
-      if (value == null) continue;
       value = Array.isArray(value) ? value : [value];
+      if (value[0] == null) continue;
       if (value[0] instanceof WebGLTexture)
         textures.push([key, value]);
       else
         primitives.push([key, value]);
     }
-
+    // textures.sort((a, b) => b[1].length - a[1].length);
     // console.log('SHADER PROGRAM', this.player.shaderPrograms.indexOf(this));
     for (let [key, value] of textures) {
       let idx = gl.getUniformLocation(program, key);
@@ -86,10 +86,12 @@ class ShaderProgram {
       let ptrArray = []
       for (let texture of value) {
         let ptr = textureMap.get(texture);
-        ptr = ptr != null ? ptr : textureIdx++;
-        textureMap.set(texture, ptr);
+        if (!ptr) {
+          ptr = textureIdx++;
+          textureMap.set(texture, ptr);
+          this.setTexture(texture, ptr);
+        }
         ptrArray.push(ptr);
-        this.setTexture(key, texture, ptr);
       }
       // console.log(key, JSON.stringify(ptrArray));
       gl.uniform1iv(idx, ptrArray);
@@ -107,7 +109,7 @@ class ShaderProgram {
     }
   }
 
-  setTexture(name, texture, idx) {
+  setTexture(texture, idx) {
     let { gl } = this;
     let enumKey = 'TEXTURE%'.replace('%', idx);
     gl.activeTexture(gl[enumKey]);

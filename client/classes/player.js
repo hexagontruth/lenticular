@@ -320,8 +320,11 @@ void main() {
       this.setTexture(uniforms.streamImage, this.videoFrame.canvas);
 
     for (let i = 0; i < this.shaderCount - 1; i++) {
+      // TODO: Fix arrays
       uniforms.lastTextures[i] = shaderPrograms[i]?.textures[lastIdx];
       uniforms.nextTextures[i] = shaderPrograms[i]?.textures[nextIdx];
+      uniforms[`lastTexture${i}`] = shaderPrograms[i]?.textures[lastIdx];
+      uniforms[`nextTexture${i}`] = shaderPrograms[i]?.textures[nextIdx];
     }
     // Backwards compatibility with the unfortunately-named s/t/d pipeline (it made some sense at the time)
 
