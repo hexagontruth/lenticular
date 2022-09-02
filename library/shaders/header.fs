@@ -14,6 +14,7 @@ uniform float time;
 uniform float cursor;
 uniform vec2 cursorPos;
 uniform vec2 cursorLast;
+uniform float clock;
 uniform float pi;
 uniform float tau;
 uniform float phi;

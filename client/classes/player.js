@@ -305,6 +305,7 @@ void main() {
     this.tIdx = nextIdx;
 
     uniforms.cursor = this.cursorDown ? uniforms.cursor + 1 : 0;
+    uniforms.clock = (Date.now()/1000) % 60;
 
     uniforms.images.forEach((e, i) => {
       this.sketches[i] && this.sketches[i].draw({
