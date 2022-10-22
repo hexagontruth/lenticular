@@ -75,6 +75,8 @@ class Player {
       return skipCond && startCond && stopCond;
     }
 
+    this.noiseInput = new NoiseInput(this, this.settings.noise);
+
     this.inputFrameCount = 0;
     this.play = this.settings.play;
     this.recording = false;
@@ -166,6 +168,8 @@ void main() {
     this.uniforms.time = 0;
     this.status.value = 0;
     this.clearProgramTextures();
+    this.noiseInput.setNoise(this.settings.noise);
+    this.setTexture(this.uniforms.noiseTexture, this.noiseInput.canvas);
     this.play || this.animate();
   }
 
@@ -200,8 +204,10 @@ void main() {
 
     this.uniforms.inputImage = gl.createTexture();
     this.uniforms.streamImage = gl.createTexture();
+    this.uniforms.noiseTexture = gl.createTexture();
     this.resetTexture(this.uniforms.inputImage, true);
     this.resetTexture(this.uniforms.streamImage, true);
+    this.resetTexture(this.uniforms.noiseTexture, true);
     this.uniforms.lastTextures = Array(this.shaderCount - 1).fill();
     this.uniforms.nextTextures = Array(this.shaderCount - 1).fill();
 
