@@ -55,7 +55,7 @@ float tet(vec3 p, float s)
   ), 0.0)) * (1. / sr3);
 }
 
-float cross(vec3 p, float r) {
+float crossProduct(vec3 p, float r) {
   float e = 40.;
   float a = box(p, vec3(e, 1, 1) * r);
   float b = box(p, vec3(1, e, 1) * r);

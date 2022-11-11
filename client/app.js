@@ -189,6 +189,9 @@ class App {
       else if (key == 'w') {
         this.toggleWebcam();
       }
+      else if (key == 'b') {
+        document.body.classList.toggle('gray');
+      }
       else if (ev.key == ' ') {
         if (this.player.play)
           this.togglePlay(false);

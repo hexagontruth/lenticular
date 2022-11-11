@@ -586,6 +586,9 @@ body {
   font-size: 0.5rem;
   overflow: hidden;
 }
+body.gray {
+  background: #3f3f3f;
+}
 
 button.active {
   background: #f00;
