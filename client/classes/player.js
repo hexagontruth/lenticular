@@ -49,6 +49,8 @@ class Player {
 
     this.settings.transferDim = this.app.overrideTransferDim || this.settings.transferDim || this.settings.dim;
 
+    this.overrideCounter = this.app.overrideCounter || 0;
+
     this.canvas.width = this.canvas.height = this.settings.dim;
 
     this.transferCanvas = document.createElement('canvas');
@@ -78,7 +80,7 @@ class Player {
     this.noiseInput = new NoiseInput(this, this.settings.noise);
 
     this.inputFrameCount = 0;
-    this.play = this.settings.play;
+    this.play = this.app.play && this.settings.play;
     this.recording = false;
     this.videoCapture = null;
     this.videoFrame = null;
@@ -164,7 +166,7 @@ void main() {
   }
 
   resetCounter() {
-    this.uniforms.counter = 0;
+    this.uniforms.counter = this.overrideCounter;
     this.uniforms.time = 0;
     this.status.value = 0;
     this.clearProgramTextures();
@@ -307,6 +309,17 @@ void main() {
   animate() {
     let { gl, uniforms, settings, shaderCount, shaderPrograms } = this;
 
+    uniforms.time = (uniforms.counter / uniforms.duration) % 1;
+    uniforms.fTime = (uniforms.time * settings.epochs) % 1;
+    uniforms.fEpoch = Math.floor(uniforms.time * settings.epochs);
+    uniforms.fEpochFills = Array(settings.epochs);
+    for (let i = 0; i < settings.epochs; i++) {
+      let a = Math.min(Math.max(uniforms.fEpoch - i, 0), 1)
+      if (uniforms.fEpoch == i)
+        a += uniforms.fTime;
+      uniforms.fEpochFills[i] = a;
+    }
+
     let lastIdx = this.tIdx;
     let nextIdx = (lastIdx + 1) % 2;
     let inputIdx = this.inputFrameCount == 0 ? 0 : uniforms.counter % this.inputFrameCount;
@@ -344,7 +357,7 @@ void main() {
     uniforms.sBuffer = shaderPrograms[0]?.textures[lastIdx];
     uniforms.tBuffer = shaderPrograms[1]?.textures[lastIdx];
     uniforms.dBuffer = shaderPrograms[2]?.textures[lastIdx];
-
+    // console.log(uniforms.time, uniforms.counter);
     shaderPrograms.forEach((shaderProgram, i) => {
       let li = (i + shaderCount - 1) % shaderCount;
       let lastTexture = shaderPrograms[i].textures[lastIdx];
@@ -373,16 +386,6 @@ void main() {
     this.status.value = uniforms.counter;
     this.endFrame(uniforms.counter);
     uniforms.counter += 1;
-    uniforms.time = (uniforms.counter / uniforms.duration) % 1;
-    uniforms.fTime = (uniforms.time * settings.epochs) % 1;
-    uniforms.fEpoch = Math.floor(uniforms.time * settings.epochs);
-    uniforms.fEpochFills = Array(settings.epochs);
-    for (let i = 0; i < settings.epochs; i++) {
-      let a = Math.min(Math.max(uniforms.fEpoch - i, 0), 1)
-      if (uniforms.fEpoch == i)
-        a += uniforms.fTime;
-      uniforms.fEpochFills[i] = a;
-    }
   }
 
   async endFrame(frameIdx) {

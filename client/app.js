@@ -48,6 +48,7 @@ class App {
     this.programPath = args.program || args.p || this.programPath;
     this.overrideDim = parseInt(args.dim || 0);
     this.overrideTransferDim = parseInt(args.tdim || 0);
+    this.overrideCounter = parseInt(args.counter || 0);
   }
 
   togglePlay(val) {
