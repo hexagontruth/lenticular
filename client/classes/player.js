@@ -68,7 +68,7 @@ class Player {
     this.gl.viewport(0, 0, this.settings.dim, this.settings.dim);
     this.uniforms.size = [this.settings.dim, this.settings.dim];
 
-    this.settings.stop = this.settings.stop === true ? this.uniforms.duration : this.settings.stop;
+    this.settings.stop = this.settings.stop === true ? this.uniforms.duration + this.settings.start || 0 : this.settings.stop;
 
     this.frameCond = (n) => {
       let skipCond = n.counter % this.settings.skip == 0;
