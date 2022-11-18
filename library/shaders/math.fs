@@ -495,22 +495,3 @@ vec4 openStep(float m, vec4 n) {
 float linearStep(float a, float b, float n) {
   return clamp((n - a) / (b - a), 0., 1.);
 }
-
-float slength(vec2 u, vec2 v, vec2 p) {
-  vec2 w, x, z;
-  w = u - v;
-  x = p - v;
-  z = project(x, w);
-  z = clamp(z, min(w, unit.yy), max(w, unit.yy));
-  return length(z - x);
-}
-
-float rhex(vec3 hex, float r) {
-  r = length(hex * sr2/2.) * r;
-  return r + length(max(abs(hex) - r, 0.));
-}
-
-float rtri(vec3 hex, float r) {
-  r = length(hex * sr2/2./sr3) * r;
-  return r + length(max(hex - r, 0.));
-}

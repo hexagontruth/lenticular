@@ -197,3 +197,40 @@ vec2 scaleUv(vec2 uv, float s) {
   uv = uv * 0.5 + 0.5;
   return uv;
 }
+
+
+float slength(vec2 u, vec2 v, vec2 p) {
+  vec2 w, x, z;
+  w = u - v;
+  x = p - v;
+  z = project(x, w);
+  z = clamp(z, min(w, unit.yy), max(w, unit.yy));
+  return length(z - x);
+}
+
+float rhex(vec3 hex, float r) {
+  r = length(hex * sr2/2.) * r;
+  return r + length(max(abs(hex) - r, 0.));
+}
+
+float rtri(vec3 hex, float r) {
+  r = length(hex * sr2/2./sr3) * r;
+  return r + length(max(hex - r, 0.));
+}
+
+float slength(vec3 u, vec3 v, vec3 p) {
+  return slength(hex2cart(u), hex2cart(v), hex2cart(p));
+}
+
+float clength(vec2 u, vec2 v, vec2 p) {
+  vec2 w, x, z;
+  w = u - v;
+  x = p - v;
+  z = project(x, w);
+  z = clamp(z, min(w, unit.yy), max(w, unit.yy));
+  return amax(cart2hex(z) - cart2hex(x));
+}
+
+float clength(vec3 u, vec3 v, vec3 p) {
+  return clength(hex2cart(u), hex2cart(v), hex2cart(p));
+}

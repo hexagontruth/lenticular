@@ -14,6 +14,10 @@ class FloatControl {
     this.field.type = 'text';
     this.field.value = this.value;
 
+    this.label = document.createElement('label');
+    this.label.innerHTML = name;
+    this.el.appendChild(this.label);
+
     this.field.oninput = () => {
       this.value = this.validate(this.field.value);
       this.update();
@@ -27,6 +31,7 @@ class FloatControl {
     this.slider.max = this.max;
     this.slider.step = this.step;
     this.slider.value = this.value;
+    this.slider.classList.add('control-input');
 
     this.slider.oninput = () => {
       this.value = this.validate(this.slider.value);

@@ -683,7 +683,15 @@ canvas {
   align-items: stretch;
   justify-content: center;
 }
+.menu-controls .control label {
+  flex: 0 0 10em;
+  width: 10em;
+  color: #fff;
+  text-align: right;
+  padding: 0 0.5em;
+}
 .menu-controls .control input[type=text] {
+  flex: 0 0 3em;
   width: 3em;
 }
 .menu-controls .control input[type=range] {

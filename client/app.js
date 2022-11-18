@@ -199,6 +199,18 @@ class App {
         else
           this.player.animate();
       }
+      else if (ev.key == 'ArrowUp' || ev.key == 'ArrowDown') {
+        const dir = ev.key == 'ArrowUp' ? -1 : 1;
+        const activeControl = document.activeElement?.parentNode;
+        if (activeControl?.classList.contains('control')) {
+          const container = activeControl.parentNode;
+          const controls = Array.from(container.childNodes);
+          const curIdx = controls.indexOf(activeControl);
+          const nextIdx = (curIdx + dir + controls.length) % controls.length;
+          controls[nextIdx].tabIndex = 5;
+          controls[nextIdx].querySelector('.control-input').focus();
+        }
+      }
       else {
         return;
       }

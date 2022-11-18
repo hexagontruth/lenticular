@@ -115,12 +115,21 @@ canvas {
     flex-direction: row;
     align-items: stretch;
     justify-content: center;
+    label {
+      flex: 0 0 10em;
+      width: 10em;
+      color: #fff;
+      text-align: right;
+      padding: 0 0.5em;
+    }
     input[type="text"] {
+      flex: 0 0 3em;
       width: 3em;
     }
     input[type="range"] {
       width: 100%;
     }
+
   }
 }
 

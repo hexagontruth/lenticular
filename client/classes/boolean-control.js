@@ -10,6 +10,7 @@ class BooleanControl {
       this.checkbox = document.createElement('input');
       this.checkbox.type = 'checkbox';
       this.checkbox.checked = this.value;
+      this.checkbox.classList.add('control-input');
   
       this.checkbox.oninput = () => {
         this.value = this.checkbox.checked;
