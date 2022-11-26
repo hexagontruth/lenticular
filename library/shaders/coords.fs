@@ -219,7 +219,7 @@ float rtri(vec3 hex, float r) {
 }
 
 float slength(vec3 u, vec3 v, vec3 p) {
-  return slength(hex2cart(u), hex2cart(v), hex2cart(p));
+  return slength(hex2cart(hexProject(u)), hex2cart(hexProject(v)), hex2cart(p));
 }
 
 float clength(vec2 u, vec2 v, vec2 p) {
