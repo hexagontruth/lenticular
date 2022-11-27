@@ -492,6 +492,22 @@ vec4 openStep(float m, vec4 n) {
   return 1. - step(m, -n);
 }
 
+float istep(float m, float n) {
+  return 1. - step(m, n);
+}
+
+vec2 istep(float m, vec2 n) {
+  return 1. - step(m, n);
+}
+vec3 istep(float m, vec3 n) {
+  return 1. - step(m, n);
+}
+
+vec4 istep(float m, vec4 n) {
+  return 1. - step(m, n);
+}
+
+
 float linearStep(float a, float b, float n) {
   return clamp((n - a) / (b - a), 0., 1.);
 }
