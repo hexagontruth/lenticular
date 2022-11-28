@@ -2,7 +2,7 @@ default:
   port: 8000
   width: 1440
   height: 1440
-  fps: 30
+  fps: 60
   codec: libx264
   crf: 15
   input: input
