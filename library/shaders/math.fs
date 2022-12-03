@@ -351,6 +351,23 @@ vec4 twav(vec4 n) {
   return vec4(twav(n.x), twav(n.y), twav(n.z), twav(n.w));
 }
 
+float pwav(float n) {
+  n = mod(n, 1.);
+  return n < 0.5 ? n * 2. : 1. - (n - .5) * 2.;
+}
+
+vec2 pwav(vec2 n) {
+  return vec2(pwav(n.x), pwav(n.y));
+}
+
+vec3 pwav(vec3 n) {
+  return vec3(pwav(n.x), pwav(n.y), pwav(n.z));
+}
+
+vec4 pwav(vec4 n) {
+  return vec4(pwav(n.x), pwav(n.y), pwav(n.z), pwav(n.w));
+}
+
 vec2 vpow(vec2 p, float n) {
   return vec2(
     pow(p.x, n),

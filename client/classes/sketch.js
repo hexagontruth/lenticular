@@ -10,6 +10,7 @@ class Sketch {
     this.ctx = frame.ctx;
     this.width = frame.dim[0];
     this.height = frame.dim[1];
+    console.log(frame.dim);
     this.rectArgs = [
       -this.width/2,
       -this.height/2,

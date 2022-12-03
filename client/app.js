@@ -34,10 +34,9 @@ class App {
     this.programPath = programPath || App.DEFAULT_PROGRAM_PATH;
 
     this.styleDim = null;
-    this.frames = [];
+    this.frames = Array.from(document.querySelectorAll('.canvas-frame'));
 
     this.configFromUrl();
-    this.initializeFrames();
     this.initializeEventListeners();
   }
 
@@ -137,14 +136,6 @@ class App {
 
   clearMessages() {
     this.messageField.classList.remove('visible');
-  }
-
-  initializeFrames() {
-    document.querySelectorAll('.canvas-frame').forEach((e, i) => {
-      let frame = new CanvasFrame(this, 'canvas' + i, {canvas: e, dim: 4096});
-      e.ondblclick = () => frame.loadImageFromPrompt();
-      this.frames.push(frame);
-    });
   }
 
   initializeEventListeners() {

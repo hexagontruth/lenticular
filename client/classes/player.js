@@ -38,7 +38,7 @@ class Player {
     this.program = app.program;
     this.shaderCount = this.program.shaderCount;
     this.canvas = app.canvas;
-    this.frames = app.frames;
+    this.frames = [];
     this.status = app.statusField;
     this.message = app.messageField;
     this.settings = this.program.settings;
@@ -187,6 +187,16 @@ void main() {
   init() {
     console.log('Initializing player...');
     let { gl } = this;
+
+    // This is terrible
+    this.frames = this.app.frames.map((e, i) => {
+        let frame = new CanvasFrame(this, 'canvas' + i, {
+          canvas: e,
+          dim: this.settings.sketchDim || this.settings.dim
+        });
+        e.ondblclick = () => frame.loadImageFromPrompt();
+        return frame;
+      });
 
     this.shaderPrograms = this.program.shaderText.map((fragText) => {
       let shaderProgram = new ShaderProgram(this, this.vertText, fragText);
