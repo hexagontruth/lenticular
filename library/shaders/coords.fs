@@ -95,6 +95,37 @@ vec3 extendedCubic(vec3 p, out vec3 v[12]) {
   return r;
 }
 
+void extendedCubic(vec3 p, out vec3 v[19]) {
+  vec3 nbrs[18] = vec3[18](
+    vec3(1, 0, -1),
+    vec3(0, 1, -1),
+    vec3(-1, 1, 0),
+    vec3(-1, 0, 1),
+    vec3(0, -1, 1),
+    vec3(1, -1, 0),
+
+    vec3(2, 0, -2),
+    vec3(0, 2, -2),
+    vec3(-2, 2, 0),
+    vec3(-2, 0, 2),
+    vec3(0, -2, 2),
+    vec3(2, -2, 0),
+
+    vec3(1, 1, -2),
+    vec3(1, -2, 1),
+    vec3(-2, 1, 1),
+    vec3(-1, -1, 2),
+    vec3(-1, 2, -1),
+    vec3(2, -1, -1)
+  );
+
+  vec3 r;
+  r = roundCubic(p);
+  for (int i = 0; i < 18; i++) {
+    v[i + 1] = r + nbrs[i];
+  }
+}
+
 vec3 getCubic(vec3 p) {
   return p - roundCubic(p);
 }
