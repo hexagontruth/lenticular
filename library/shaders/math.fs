@@ -528,3 +528,21 @@ vec4 istep(float m, vec4 n) {
 float linearStep(float a, float b, float n) {
   return clamp((n - a) / (b - a), 0., 1.);
 }
+
+vec2 idxVec2(int n) {
+  vec2 v;
+  v[n] = 1.;
+  return v;
+}
+
+vec3 idxVec3(int n) {
+  vec3 v;
+  v[n] = 1.;
+  return v;
+}
+
+vec4 idxVec4(int n) {
+  vec4 v;
+  v[n] = 1.;
+  return v;
+}
