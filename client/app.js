@@ -156,7 +156,7 @@ class App {
         }
         ev.preventDefault();
       }
-      else if (ev.key == 'Escape') {
+      else if (ev.shiftKey && ev.key == 'Escape') {
         this.toggleHidden();
       }
       else if (ev.key == 'Tab') {
