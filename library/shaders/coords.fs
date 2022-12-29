@@ -265,3 +265,18 @@ float clength(vec2 u, vec2 v, vec2 p) {
 float clength(vec3 u, vec3 v, vec3 p) {
   return clength(hex2cart(u), hex2cart(v), hex2cart(p));
 }
+
+vec3 ptrot(vec3 u, vec3 v, float b, float a) {
+  vec3 n, o, du, dv, w, p;
+  o = (u + v) / 2.;
+  w = mix(cross(u, v), cross(u, v-0.0001), step(1., -dot(u, v)));
+  w = trot(normalize(w), normalize(v - u), b) + o;
+  du = u - w;
+  dv = v - w;
+
+  n = normalize(cross(du, dv));
+  p = trot(u - o, n, a);
+  p += o;
+
+  return p;
+}

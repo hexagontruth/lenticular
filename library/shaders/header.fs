@@ -1,8 +1,7 @@
 #version 300 es
-#ifdef GL_ES
-  precision highp float;
-  precision highp sampler2D;
-#endif
+
+precision highp float;
+precision highp sampler2D;
 
 // #version 300 es
 uniform float counter;
