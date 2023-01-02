@@ -280,3 +280,7 @@ vec3 ptrot(vec3 u, vec3 v, float b, float a) {
 
   return p;
 }
+
+vec2 s2p(vec3 p) {
+  return hex2cart(hexProject(p));
+}
